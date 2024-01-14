@@ -1,0 +1,18 @@
+{
+  "input_path": "./schema",
+  "output_path": "./gen/provider",
+  "translator": {
+    "name": "go",
+    "version": "v0.0.1"
+  },
+  "client_sdk": [
+    {
+      "output_path": "./gen/sdk/go",
+      "translator": {
+        "name": "go",
+        "version": "v0.0.1"
+      }
+    }
+  ],
+  "translators_dir": "./build/translator"
+}

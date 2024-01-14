@@ -1,0 +1,9 @@
+{
+  "input_path": "./example",
+  "translator": {
+    "name": "go",
+    "version": "v0.0.1"
+  },
+  "translators_dir": "./build/translator",
+  "providers_dir": "./build/provider"
+}

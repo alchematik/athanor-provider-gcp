@@ -48,7 +48,7 @@ type BucketCreator interface {
 }
 
 type BucketUpdator interface {
-	UpdateBucket(context.Context, BucketIdentifier, BucketConfig) (Bucket, error)
+	UpdateBucket(context.Context, BucketIdentifier, BucketConfig, []sdk.UpdateMaskField) (Bucket, error)
 }
 
 type BucketDeleter interface {
@@ -103,7 +103,7 @@ func (h BucketHandler) CreateResource(ctx context.Context, id sdk.Identifier, co
 	return r.ToResourceValue()
 }
 
-func (h BucketHandler) UpdateResource(ctx context.Context, id sdk.Identifier, config any) (sdk.Resource, error) {
+func (h BucketHandler) UpdateResource(ctx context.Context, id sdk.Identifier, config any, mask []sdk.UpdateMaskField) (sdk.Resource, error) {
 	if h.BucketUpdator == nil {
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
@@ -118,7 +118,7 @@ func (h BucketHandler) UpdateResource(ctx context.Context, id sdk.Identifier, co
 		return sdk.Resource{}, err
 	}
 
-	r, err := h.BucketUpdator.UpdateBucket(ctx, idVal, configVal)
+	r, err := h.BucketUpdator.UpdateBucket(ctx, idVal, configVal, mask)
 	if err != nil {
 		return sdk.Resource{}, err
 	}

@@ -19,11 +19,12 @@ func main() {
 	}
 	bucketConfig := gcp.BucketConfig{
 		Labels: athanor.Map(map[string]athanor.Type{
-			"test": athanor.String("hello"),
+			"test": athanor.String("hello_world"),
+			"meow": athanor.String("is_me"),
 		}),
 	}
 	bucket := athanor.Resource(
-		athanor.Bool(true),
+		athanor.Bool(false),
 		provider,
 		bucketID,
 		bucketConfig,

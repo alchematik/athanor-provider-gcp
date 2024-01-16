@@ -8,29 +8,29 @@ import (
 )
 
 type BucketObjectConfig struct {
-	Contents sdk.Type
+	Contents any
 }
 
-func (x BucketObjectConfig) ToExpr() sdk.Expr {
-	return sdk.Map(map[string]sdk.Type{
+func (x BucketObjectConfig) ToExpr() any {
+	return map[string]any{
 		"contents": x.Contents,
-	}).ToExpr()
+	}
 }
 
 type BucketObjectIdentifier struct {
 	Alias string
 
-	Bucket sdk.Type
-	Name   sdk.Type
+	Bucket any
+	Name   any
 }
 
-func (x BucketObjectIdentifier) ToExpr() sdk.Expr {
+func (x BucketObjectIdentifier) ToExpr() any {
 	return sdk.ResourceIdentifier(
 		"bucket_object",
 		x.Alias,
-		sdk.Map(map[string]sdk.Type{
+		map[string]any{
 			"bucket": x.Bucket,
 			"name":   x.Name,
-		}),
-	).ToExpr()
+		},
+	)
 }

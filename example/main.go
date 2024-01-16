@@ -9,22 +9,22 @@ import (
 )
 
 func main() {
-	provider := athanor.Provider("gcp", athanor.String("gcp"), athanor.String("v0.0.1"))
+	provider := athanor.Provider("gcp", "v0.0.1")
 
 	bucketID := gcp.BucketIdentifier{
 		Alias:    "my-bucket",
-		Project:  athanor.String("textapp-389501"),
-		Location: athanor.String("us-east4"),
-		Name:     athanor.String("athanor-test-bucket"),
+		Project:  "textapp-389501",
+		Location: "us-east4",
+		Name:     "athanor-test-bucket",
 	}
 	bucketConfig := gcp.BucketConfig{
-		Labels: athanor.Map(map[string]athanor.Type{
-			"test": athanor.String("hello_world"),
-			"meow": athanor.String("is_me"),
-		}),
+		Labels: map[string]any{
+			"test": "hello_world",
+			"meow": "is_me",
+		},
 	}
 	bucket := athanor.Resource(
-		athanor.Bool(true),
+		true,
 		provider,
 		bucketID,
 		bucketConfig,
@@ -36,15 +36,15 @@ func main() {
 	bucketObjectID := gcp.BucketObjectIdentifier{
 		Alias:  "my-bucket-object",
 		Bucket: bucketID,
-		Name:   athanor.String("my-bucket-object"),
+		Name:   "my-bucket-object",
 	}
 
 	bucketObjectConfig := gcp.BucketObjectConfig{
-		Contents: athanor.File("config.json"),
+		Contents: athanor.FileType{Path: "example/config.json"},
 	}
 
 	bucketObject := athanor.Resource(
-		athanor.Bool(true),
+		true,
 		provider,
 		bucketObjectID,
 		bucketObjectConfig,

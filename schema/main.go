@@ -12,6 +12,7 @@ func main() {
 		Version: "v0.0.1",
 		Resources: []schema.ResourceSchema{
 			bucket,
+			bucketObject,
 		},
 	}
 

@@ -14,5 +14,8 @@
       }
     }
   ],
-  "translators_dir": "./build/translator"
+  "translators_dir": "./build/translator",
+  "args": {
+    "module": "github.com/alchematik/athanor-provider-gcp"
+  }
 }

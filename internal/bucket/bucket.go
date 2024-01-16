@@ -4,18 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
-	"github.com/alchematik/athanor-provider-gcp/gen/provider"
+	"github.com/alchematik/athanor-provider-gcp/gen/provider/bucket"
 
 	"cloud.google.com/go/storage"
 	sdkerrors "github.com/alchematik/athanor-go/sdk/errors"
 	value "github.com/alchematik/athanor-go/sdk/provider/value"
 )
 
-func NewHandler() provider.BucketHandler {
+func NewHandler() bucket.BucketHandler {
 	c := &client{}
-	return provider.BucketHandler{
+	return bucket.BucketHandler{
 		BucketGetter:  c,
 		BucketCreator: c,
 		BucketUpdator: c,
@@ -26,23 +25,23 @@ func NewHandler() provider.BucketHandler {
 type client struct {
 }
 
-func (c *client) GetBucket(ctx context.Context, id provider.BucketIdentifier) (provider.Bucket, error) {
+func (c *client) GetBucket(ctx context.Context, id bucket.BucketIdentifier) (bucket.Bucket, error) {
 	gcp, err := storage.NewClient(ctx)
 	if err != nil {
-		return provider.Bucket{}, fmt.Errorf("error creating storage client: %v", err)
+		return bucket.Bucket{}, fmt.Errorf("error creating storage client: %v", err)
 	}
 
 	defer gcp.Close()
 
-	bucket := gcp.Bucket(string(id.Name))
+	b := gcp.Bucket(string(id.Name))
 
-	attrs, err := bucket.Attrs(ctx)
+	attrs, err := b.Attrs(ctx)
 	if err != nil {
 		if errors.Is(err, storage.ErrBucketNotExist) {
-			return provider.Bucket{}, sdkerrors.NewErrorNotFound()
+			return bucket.Bucket{}, sdkerrors.NewErrorNotFound()
 		}
 
-		return provider.Bucket{}, fmt.Errorf("oh no: %v", err)
+		return bucket.Bucket{}, fmt.Errorf("oh no: %v", err)
 	}
 
 	labels := map[string]any{}
@@ -50,21 +49,21 @@ func (c *client) GetBucket(ctx context.Context, id provider.BucketIdentifier) (p
 		labels[k] = v
 	}
 
-	return provider.Bucket{
+	return bucket.Bucket{
 		Identifier: id,
-		Config: provider.BucketConfig{
+		Config: bucket.BucketConfig{
 			Labels: labels,
 		},
-		Attrs: provider.BucketAttrs{
+		Attrs: bucket.BucketAttrs{
 			Created: attrs.Created.String(),
 		},
 	}, nil
 }
 
-func (c *client) CreateBucket(ctx context.Context, id provider.BucketIdentifier, config provider.BucketConfig) (provider.Bucket, error) {
+func (c *client) CreateBucket(ctx context.Context, id bucket.BucketIdentifier, config bucket.BucketConfig) (bucket.Bucket, error) {
 	gcp, err := storage.NewClient(ctx)
 	if err != nil {
-		return provider.Bucket{}, err
+		return bucket.Bucket{}, err
 	}
 
 	defer gcp.Close()
@@ -73,22 +72,22 @@ func (c *client) CreateBucket(ctx context.Context, id provider.BucketIdentifier,
 	for k, v := range config.Labels {
 		str, ok := v.(string)
 		if !ok {
-			return provider.Bucket{}, fmt.Errorf("expected label value for key %q to be a string, got %T\n", k, v)
+			return bucket.Bucket{}, fmt.Errorf("expected label value for key %q to be a string, got %T\n", k, v)
 		}
 		labels[k] = str
 	}
 
-	bucket := gcp.Bucket(string(id.Name))
-	if err := bucket.Create(ctx, id.Project, &storage.BucketAttrs{
+	b := gcp.Bucket(string(id.Name))
+	if err := b.Create(ctx, id.Project, &storage.BucketAttrs{
 		Labels:   labels,
 		Location: id.Location,
 	}); err != nil {
-		return provider.Bucket{}, err
+		return bucket.Bucket{}, err
 	}
 
-	attrs, err := bucket.Attrs(ctx)
+	attrs, err := b.Attrs(ctx)
 	if err != nil {
-		return provider.Bucket{}, err
+		return bucket.Bucket{}, err
 	}
 
 	resLabels := map[string]any{}
@@ -96,21 +95,21 @@ func (c *client) CreateBucket(ctx context.Context, id provider.BucketIdentifier,
 		resLabels[k] = v
 	}
 
-	return provider.Bucket{
+	return bucket.Bucket{
 		Identifier: id,
-		Config: provider.BucketConfig{
+		Config: bucket.BucketConfig{
 			Labels: resLabels,
 		},
-		Attrs: provider.BucketAttrs{
+		Attrs: bucket.BucketAttrs{
 			Created: attrs.Created.String(),
 		},
 	}, nil
 }
 
-func (c *client) UpdateBucket(ctx context.Context, id provider.BucketIdentifier, config provider.BucketConfig, mask []value.UpdateMaskField) (provider.Bucket, error) {
+func (c *client) UpdateBucket(ctx context.Context, id bucket.BucketIdentifier, config bucket.BucketConfig, mask []value.UpdateMaskField) (bucket.Bucket, error) {
 	gcp, err := storage.NewClient(ctx)
 	if err != nil {
-		return provider.Bucket{}, err
+		return bucket.Bucket{}, err
 	}
 
 	defer gcp.Close()
@@ -125,12 +124,12 @@ func (c *client) UpdateBucket(ctx context.Context, id provider.BucketIdentifier,
 				} else {
 					val, ok := config.Labels[label.Name]
 					if !ok {
-						return provider.Bucket{}, fmt.Errorf("value for label %q is missing", label.Name)
+						return bucket.Bucket{}, fmt.Errorf("value for label %q is missing", label.Name)
 					}
 
 					str, ok := val.(string)
 					if !ok {
-						return provider.Bucket{}, fmt.Errorf("value for label %q is not a string", label.Name)
+						return bucket.Bucket{}, fmt.Errorf("value for label %q is not a string", label.Name)
 					}
 					toUpdate.SetLabel(label.Name, str)
 				}
@@ -138,10 +137,10 @@ func (c *client) UpdateBucket(ctx context.Context, id provider.BucketIdentifier,
 		}
 	}
 
-	bucket := gcp.Bucket(string(id.Name))
-	attrs, err := bucket.Update(ctx, toUpdate)
+	b := gcp.Bucket(string(id.Name))
+	attrs, err := b.Update(ctx, toUpdate)
 	if err != nil {
-		return provider.Bucket{}, err
+		return bucket.Bucket{}, err
 	}
 
 	labels := map[string]any{}
@@ -149,25 +148,23 @@ func (c *client) UpdateBucket(ctx context.Context, id provider.BucketIdentifier,
 		labels[k] = v
 	}
 
-	return provider.Bucket{
+	return bucket.Bucket{
 		Identifier: id,
-		Config: provider.BucketConfig{
+		Config: bucket.BucketConfig{
 			Labels: labels,
 		},
-		Attrs: provider.BucketAttrs{
+		Attrs: bucket.BucketAttrs{
 			Created: attrs.Created.String(),
 		},
 	}, nil
 }
 
-func (c *client) DeleteBucket(ctx context.Context, id provider.BucketIdentifier) error {
+func (c *client) DeleteBucket(ctx context.Context, id bucket.BucketIdentifier) error {
 	gcp, err := storage.NewClient(ctx)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("deleting bucket >>>>>>>>>>>>>>>> %v", id.Name)
-
-	bucket := gcp.Bucket(id.Name)
-	return bucket.Delete(ctx)
+	b := gcp.Bucket(id.Name)
+	return b.Delete(ctx)
 }

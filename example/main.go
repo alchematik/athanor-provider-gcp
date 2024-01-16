@@ -24,7 +24,7 @@ func main() {
 		}),
 	}
 	bucket := athanor.Resource(
-		athanor.Bool(false),
+		athanor.Bool(true),
 		provider,
 		bucketID,
 		bucketConfig,
@@ -32,6 +32,25 @@ func main() {
 
 	bp := athanor.Blueprint{}
 	bp = bp.WithResource(bucket)
+
+	bucketObjectID := gcp.BucketObjectIdentifier{
+		Alias:  "my-bucket-object",
+		Bucket: bucketID,
+		Name:   athanor.String("my-bucket-object"),
+	}
+
+	bucketObjectConfig := gcp.BucketObjectConfig{
+		Contents: athanor.File("config.json"),
+	}
+
+	bucketObject := athanor.Resource(
+		athanor.Bool(true),
+		provider,
+		bucketObjectID,
+		bucketObjectConfig,
+	)
+
+	bp = bp.WithResource(bucketObject)
 
 	if err := athanor.Build(bp); err != nil {
 		log.Fatalf("error building blueprint: %v", err)

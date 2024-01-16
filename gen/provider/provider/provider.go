@@ -7,6 +7,9 @@ import (
 	"fmt"
 
 	sdk "github.com/alchematik/athanor-go/sdk/provider/value"
+
+	"github.com/alchematik/athanor-provider-gcp/gen/provider/bucket"
+	"github.com/alchematik/athanor-provider-gcp/gen/provider/bucket_object"
 )
 
 func ParseIdentifier(v any) (sdk.ResourceIdentifier, error) {
@@ -17,7 +20,9 @@ func ParseIdentifier(v any) (sdk.ResourceIdentifier, error) {
 
 	switch id.ResourceType {
 	case "bucket":
-		return ParseBucketIdentifier(id.Value)
+		return bucket.ParseBucketIdentifier(id.Value)
+	case "bucket_object":
+		return bucket_object.ParseBucketObjectIdentifier(id.Value)
 
 	default:
 		return nil, fmt.Errorf("invalid resource type: %s", id.ResourceType)

@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	provider := athanor.Provider("gcp", "v0.0.1")
+	provider := athanor.Provider{Name: "gcp", Version: "v0.0.1"}
 
 	bucketID := gcp.BucketIdentifier{
 		Alias:    "my-bucket",
@@ -23,12 +23,12 @@ func main() {
 			"meow": "is_me",
 		},
 	}
-	bucket := athanor.Resource(
-		true,
-		provider,
-		bucketID,
-		bucketConfig,
-	)
+	bucket := athanor.Resource{
+		Exists:     true,
+		Provider:   provider,
+		Identifier: bucketID,
+		Config:     bucketConfig,
+	}
 
 	bp := athanor.Blueprint{}
 	bp = bp.WithResource(bucket)
@@ -40,15 +40,15 @@ func main() {
 	}
 
 	bucketObjectConfig := gcp.BucketObjectConfig{
-		Contents: athanor.FileType{Path: "example/config.json"},
+		Contents: athanor.File{Path: "example/config.json"},
 	}
 
-	bucketObject := athanor.Resource(
-		true,
-		provider,
-		bucketObjectID,
-		bucketObjectConfig,
-	)
+	bucketObject := athanor.Resource{
+		Exists:     true,
+		Provider:   provider,
+		Identifier: bucketObjectID,
+		Config:     bucketObjectConfig,
+	}
 
 	bp = bp.WithResource(bucketObject)
 

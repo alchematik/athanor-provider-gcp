@@ -42,7 +42,9 @@ func main() {
 	}
 
 	bucketObjectConfig := bucketobject.BucketObjectConfig{
-		Contents: athanor.File{Path: "example/config.json"},
+		Contents: athanor.File{
+			Path: "../test_cloud_func.zip",
+		},
 	}
 
 	bucketObject := athanor.Resource{
@@ -58,7 +60,7 @@ func main() {
 		Alias:    "my-function",
 		Project:  "textapp-389501",
 		Location: "us-east4",
-		Name:     "athanor-test-function",
+		Name:     "athanor-test-function-2",
 	}
 	funcConfig := function.FunctionConfig{
 		Description: "test function managed by athanor",

@@ -63,6 +63,8 @@ func (c *client) GetFunction(ctx context.Context, id identifier.FunctionIdentifi
 	bucketName := storageSource.GetBucket()
 	objectName := storageSource.GetObject()
 
+	log.Printf("FUNCTION BUCKET AND OBJECT >>>>>>>>>>>>>>> %v, %v", bucketName, objectName)
+
 	storageClient, err := storage.NewClient(ctx)
 	if err != nil {
 		return function.Function{}, err
@@ -82,7 +84,7 @@ func (c *client) GetFunction(ctx context.Context, id identifier.FunctionIdentifi
 				Runtime:    res.GetBuildConfig().GetRuntime(),
 				Entrypoint: res.GetBuildConfig().GetEntryPoint(),
 				Source: value.File{
-					Checksum: fmt.Sprintf("%x", objectAttrs.MD5),
+					Checksum: fmt.Sprintf("%d", objectAttrs.CRC32C),
 				},
 			},
 		},
@@ -107,30 +109,21 @@ func (c *client) CreateFunction(ctx context.Context, id identifier.FunctionIdent
 		return function.Function{}, err
 	}
 
-	var buf bytes.Buffer
-	w := multipart.NewWriter(&buf)
-	fw, err := w.CreateFormFile("file", filepath.Base(config.BuildConfig.Source.Path))
+	storageClient, err := storage.NewClient(ctx)
 	if err != nil {
 		return function.Function{}, err
 	}
 
+	objHandle := storageClient.Bucket(uploadURLRes.GetStorageSource().GetBucket()).Object(uploadURLRes.GetStorageSource().GetObject())
+	writer := objHandle.NewWriter(ctx)
 	file, err := os.Open(config.BuildConfig.Source.Path)
 	if err != nil {
 		return function.Function{}, err
 	}
-	defer file.Close()
-	if _, err := io.Copy(fw, file); err != nil {
+	if _, err := io.Copy(writer, file); err != nil {
 		return function.Function{}, err
 	}
-	w.Close()
-
-	req, err := http.NewRequest(http.MethodPut, uploadURLRes.UploadUrl, &buf)
-	if err != nil {
-		return function.Function{}, err
-	}
-	req.Header.Set("Content-Type", "application/zip")
-	client := &http.Client{}
-	if _, err = client.Do(req); err != nil {
+	if err := writer.Close(); err != nil {
 		return function.Function{}, err
 	}
 
@@ -180,10 +173,6 @@ func (c *client) CreateFunction(ctx context.Context, id identifier.FunctionIdent
 	}
 
 	endStorage := res.GetBuildConfig().GetSource().GetStorageSource()
-	storageClient, err := storage.NewClient(ctx)
-	if err != nil {
-		return function.Function{}, err
-	}
 	objectAttrs, err := storageClient.Bucket(endStorage.GetBucket()).Object(endStorage.GetObject()).Attrs(ctx)
 	if err != nil {
 		return function.Function{}, err
@@ -198,7 +187,7 @@ func (c *client) CreateFunction(ctx context.Context, id identifier.FunctionIdent
 				Runtime:    res.GetBuildConfig().GetRuntime(),
 				Entrypoint: res.GetBuildConfig().GetEntryPoint(),
 				Source: value.File{
-					Checksum: fmt.Sprintf("%x", objectAttrs.MD5),
+					Checksum: fmt.Sprintf("%d", objectAttrs.CRC32C),
 				},
 			},
 		},
@@ -232,30 +221,21 @@ func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdent
 		return function.Function{}, err
 	}
 
-	var buf bytes.Buffer
-	w := multipart.NewWriter(&buf)
-	fw, err := w.CreateFormFile("file", filepath.Base(config.BuildConfig.Source.Path))
+	storageClient, err := storage.NewClient(ctx)
 	if err != nil {
 		return function.Function{}, err
 	}
 
+	objHandle := storageClient.Bucket(uploadURLRes.GetStorageSource().GetBucket()).Object(uploadURLRes.GetStorageSource().GetObject())
+	writer := objHandle.NewWriter(ctx)
 	file, err := os.Open(config.BuildConfig.Source.Path)
 	if err != nil {
 		return function.Function{}, err
 	}
-	defer file.Close()
-	if _, err := io.Copy(fw, file); err != nil {
+	if _, err := io.Copy(writer, file); err != nil {
 		return function.Function{}, err
 	}
-	w.Close()
-
-	req, err := http.NewRequest(http.MethodPut, uploadURLRes.UploadUrl, &buf)
-	if err != nil {
-		return function.Function{}, err
-	}
-	req.Header.Set("Content-Type", "application/zip")
-	client := &http.Client{}
-	if _, err = client.Do(req); err != nil {
+	if err := writer.Close(); err != nil {
 		return function.Function{}, err
 	}
 
@@ -276,6 +256,9 @@ func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdent
 			},
 		},
 	})
+	if err != nil {
+		return function.Function{}, err
+	}
 
 	res, err := operation.Wait(ctx)
 	if err != nil {
@@ -288,10 +271,6 @@ func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdent
 	}
 
 	endStorage := res.GetBuildConfig().GetSource().GetStorageSource()
-	storageClient, err := storage.NewClient(ctx)
-	if err != nil {
-		return function.Function{}, err
-	}
 	objectAttrs, err := storageClient.Bucket(endStorage.GetBucket()).Object(endStorage.GetObject()).Attrs(ctx)
 	if err != nil {
 		return function.Function{}, err
@@ -306,7 +285,7 @@ func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdent
 				Runtime:    res.GetBuildConfig().GetRuntime(),
 				Entrypoint: res.GetBuildConfig().GetEntryPoint(),
 				Source: value.File{
-					Checksum: fmt.Sprintf("%x", objectAttrs.MD5),
+					Checksum: fmt.Sprintf("%d", objectAttrs.CRC32C),
 				},
 			},
 		},

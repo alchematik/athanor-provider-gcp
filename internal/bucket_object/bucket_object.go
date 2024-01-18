@@ -54,7 +54,7 @@ func (c *client) GetBucketObject(ctx context.Context, id identifier.BucketObject
 		Identifier: id,
 		Config: bucketobject.BucketObjectConfig{
 			Contents: value.File{
-				Checksum: fmt.Sprintf("%x", attrs.MD5),
+				Checksum: fmt.Sprintf("%d", attrs.CRC32C),
 			},
 		},
 		Attrs: bucketobject.BucketObjectAttrs{
@@ -101,7 +101,7 @@ func (c *client) CreateBucketObject(ctx context.Context, id identifier.BucketObj
 		Identifier: id,
 		Config: bucketobject.BucketObjectConfig{
 			Contents: value.File{
-				Checksum: fmt.Sprintf("%x", attrs.MD5),
+				Checksum: fmt.Sprintf("%d", attrs.CRC32C),
 			},
 		},
 		Attrs: bucketobject.BucketObjectAttrs{
@@ -148,7 +148,7 @@ func (c *client) UpdateBucketObject(ctx context.Context, id identifier.BucketObj
 		Identifier: id,
 		Config: bucketobject.BucketObjectConfig{
 			Contents: value.File{
-				Checksum: fmt.Sprintf("%x", attrs.MD5),
+				Checksum: fmt.Sprintf("%d", attrs.CRC32C),
 			},
 		},
 		Attrs: bucketobject.BucketObjectAttrs{

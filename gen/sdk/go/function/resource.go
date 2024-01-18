@@ -38,9 +38,9 @@ func (x FunctionConfig) ToExpr() any {
 type FunctionIdentifier struct {
 	Alias string
 
-	Project any
-	Region  any
-	Name    any
+	Project  any
+	Location any
+	Name     any
 }
 
 func (x FunctionIdentifier) ToExpr() any {
@@ -48,9 +48,9 @@ func (x FunctionIdentifier) ToExpr() any {
 		ResourceType: "function",
 		Alias:        x.Alias,
 		Value: map[string]any{
-			"project": x.Project,
-			"region":  x.Region,
-			"name":    x.Name,
+			"project":  x.Project,
+			"location": x.Location,
+			"name":     x.Name,
 		},
 	}
 }

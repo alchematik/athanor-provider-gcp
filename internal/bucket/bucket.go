@@ -34,7 +34,7 @@ func (c *client) GetBucket(ctx context.Context, id identifier.BucketIdentifier) 
 
 	defer gcp.Close()
 
-	b := gcp.Bucket(string(id.Name))
+	b := gcp.Bucket(id.Name)
 
 	attrs, err := b.Attrs(ctx)
 	if err != nil {
@@ -78,7 +78,7 @@ func (c *client) CreateBucket(ctx context.Context, id identifier.BucketIdentifie
 		labels[k] = str
 	}
 
-	b := gcp.Bucket(string(id.Name))
+	b := gcp.Bucket(id.Name)
 	if err := b.Create(ctx, id.Project, &storage.BucketAttrs{
 		Labels:   labels,
 		Location: id.Location,

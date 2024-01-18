@@ -133,7 +133,7 @@ func (h FunctionHandler) DeleteResource(ctx context.Context, id sdk.Identifier) 
 type BuildConfig struct {
 	Runtime    string
 	Entrypoint string
-	Source     sdk.ResourceIdentifier
+	Source     sdk.File
 }
 
 func (x BuildConfig) ToValue() any {
@@ -159,7 +159,7 @@ func ParseBuildConfig(v any) (BuildConfig, error) {
 	if err != nil {
 		return BuildConfig{}, nil
 	}
-	source, err := identifier.ParseIdentifier(m["source"])
+	source, err := sdk.ParseFile(m["source"])
 	if err != nil {
 		return BuildConfig{}, nil
 	}

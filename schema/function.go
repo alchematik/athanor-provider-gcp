@@ -15,7 +15,7 @@ var function = schema.ResourceSchema{
 				Type: schema.FieldTypeString,
 			},
 			{
-				Name: "region",
+				Name: "location",
 				Type: schema.FieldTypeString,
 			},
 			{
@@ -49,7 +49,7 @@ var function = schema.ResourceSchema{
 					},
 					{
 						Name: "source",
-						Type: schema.FieldTypeIdentifier,
+						Type: schema.FieldTypeFile,
 					},
 				},
 			},

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/alchematik/athanor-provider-gcp/gen/provider/bucket"
+	"github.com/alchematik/athanor-provider-gcp/gen/provider/identifier"
 
 	"cloud.google.com/go/storage"
 	sdkerrors "github.com/alchematik/athanor-go/sdk/errors"
@@ -25,7 +26,7 @@ func NewHandler() bucket.BucketHandler {
 type client struct {
 }
 
-func (c *client) GetBucket(ctx context.Context, id bucket.BucketIdentifier) (bucket.Bucket, error) {
+func (c *client) GetBucket(ctx context.Context, id identifier.BucketIdentifier) (bucket.Bucket, error) {
 	gcp, err := storage.NewClient(ctx)
 	if err != nil {
 		return bucket.Bucket{}, fmt.Errorf("error creating storage client: %v", err)
@@ -60,7 +61,7 @@ func (c *client) GetBucket(ctx context.Context, id bucket.BucketIdentifier) (buc
 	}, nil
 }
 
-func (c *client) CreateBucket(ctx context.Context, id bucket.BucketIdentifier, config bucket.BucketConfig) (bucket.Bucket, error) {
+func (c *client) CreateBucket(ctx context.Context, id identifier.BucketIdentifier, config bucket.BucketConfig) (bucket.Bucket, error) {
 	gcp, err := storage.NewClient(ctx)
 	if err != nil {
 		return bucket.Bucket{}, err
@@ -106,7 +107,7 @@ func (c *client) CreateBucket(ctx context.Context, id bucket.BucketIdentifier, c
 	}, nil
 }
 
-func (c *client) UpdateBucket(ctx context.Context, id bucket.BucketIdentifier, config bucket.BucketConfig, mask []value.UpdateMaskField) (bucket.Bucket, error) {
+func (c *client) UpdateBucket(ctx context.Context, id identifier.BucketIdentifier, config bucket.BucketConfig, mask []value.UpdateMaskField) (bucket.Bucket, error) {
 	gcp, err := storage.NewClient(ctx)
 	if err != nil {
 		return bucket.Bucket{}, err
@@ -159,7 +160,7 @@ func (c *client) UpdateBucket(ctx context.Context, id bucket.BucketIdentifier, c
 	}, nil
 }
 
-func (c *client) DeleteBucket(ctx context.Context, id bucket.BucketIdentifier) error {
+func (c *client) DeleteBucket(ctx context.Context, id identifier.BucketIdentifier) error {
 	gcp, err := storage.NewClient(ctx)
 	if err != nil {
 		return err

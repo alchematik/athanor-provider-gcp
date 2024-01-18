@@ -13,6 +13,7 @@ func main() {
 		Resources: []schema.ResourceSchema{
 			bucket,
 			bucketObject,
+			function,
 		},
 	}
 

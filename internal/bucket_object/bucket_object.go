@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/alchematik/athanor-provider-gcp/gen/provider/bucket"
 	bucketobject "github.com/alchematik/athanor-provider-gcp/gen/provider/bucket_object"
+	"github.com/alchematik/athanor-provider-gcp/gen/provider/identifier"
 
 	"cloud.google.com/go/storage"
 	sdkerrors "github.com/alchematik/athanor-go/sdk/errors"
@@ -26,7 +26,7 @@ func NewHandler() bucketobject.BucketObjectHandler {
 
 type client struct{}
 
-func (c *client) GetBucketObject(ctx context.Context, id bucketobject.BucketObjectIdentifier) (bucketobject.BucketObject, error) {
+func (c *client) GetBucketObject(ctx context.Context, id identifier.BucketObjectIdentifier) (bucketobject.BucketObject, error) {
 	gcp, err := storage.NewClient(ctx)
 	if err != nil {
 		return bucketobject.BucketObject{}, fmt.Errorf("error creating storage client: %v", err)
@@ -34,9 +34,9 @@ func (c *client) GetBucketObject(ctx context.Context, id bucketobject.BucketObje
 
 	defer gcp.Close()
 
-	bucketID, err := bucket.ParseBucketIdentifier(id.Bucket)
-	if err != nil {
-		return bucketobject.BucketObject{}, err
+	bucketID, ok := id.Bucket.(identifier.BucketIdentifier)
+	if !ok {
+		return bucketobject.BucketObject{}, fmt.Errorf("field bucket must be a bucket identifier")
 	}
 
 	b := gcp.Bucket(bucketID.Name)
@@ -63,7 +63,7 @@ func (c *client) GetBucketObject(ctx context.Context, id bucketobject.BucketObje
 	}, nil
 }
 
-func (c *client) CreateBucketObject(ctx context.Context, id bucketobject.BucketObjectIdentifier, config bucketobject.BucketObjectConfig) (bucketobject.BucketObject, error) {
+func (c *client) CreateBucketObject(ctx context.Context, id identifier.BucketObjectIdentifier, config bucketobject.BucketObjectConfig) (bucketobject.BucketObject, error) {
 	gcp, err := storage.NewClient(ctx)
 	if err != nil {
 		return bucketobject.BucketObject{}, fmt.Errorf("error creating storage client: %v", err)
@@ -71,9 +71,9 @@ func (c *client) CreateBucketObject(ctx context.Context, id bucketobject.BucketO
 
 	defer gcp.Close()
 
-	bucketID, err := bucket.ParseBucketIdentifier(id.Bucket)
-	if err != nil {
-		return bucketobject.BucketObject{}, err
+	bucketID, ok := id.Bucket.(identifier.BucketIdentifier)
+	if !ok {
+		return bucketobject.BucketObject{}, fmt.Errorf("field bucket must be a bucket identifier")
 	}
 
 	b := gcp.Bucket(bucketID.Name)
@@ -110,7 +110,7 @@ func (c *client) CreateBucketObject(ctx context.Context, id bucketobject.BucketO
 	}, nil
 }
 
-func (c *client) UpdateBucketObject(ctx context.Context, id bucketobject.BucketObjectIdentifier, config bucketobject.BucketObjectConfig, mask []value.UpdateMaskField) (bucketobject.BucketObject, error) {
+func (c *client) UpdateBucketObject(ctx context.Context, id identifier.BucketObjectIdentifier, config bucketobject.BucketObjectConfig, mask []value.UpdateMaskField) (bucketobject.BucketObject, error) {
 	gcp, err := storage.NewClient(ctx)
 	if err != nil {
 		return bucketobject.BucketObject{}, fmt.Errorf("error creating storage client: %v", err)
@@ -118,9 +118,9 @@ func (c *client) UpdateBucketObject(ctx context.Context, id bucketobject.BucketO
 
 	defer gcp.Close()
 
-	bucketID, err := bucket.ParseBucketIdentifier(id.Bucket)
-	if err != nil {
-		return bucketobject.BucketObject{}, err
+	bucketID, ok := id.Bucket.(identifier.BucketIdentifier)
+	if !ok {
+		return bucketobject.BucketObject{}, fmt.Errorf("field bucket must be a bucket identifier")
 	}
 
 	b := gcp.Bucket(bucketID.Name)
@@ -157,7 +157,7 @@ func (c *client) UpdateBucketObject(ctx context.Context, id bucketobject.BucketO
 	}, nil
 }
 
-func (c *client) DeleteBucketObject(ctx context.Context, id bucketobject.BucketObjectIdentifier) error {
+func (c *client) DeleteBucketObject(ctx context.Context, id identifier.BucketObjectIdentifier) error {
 	gcp, err := storage.NewClient(ctx)
 	if err != nil {
 		return fmt.Errorf("error creating storage client: %v", err)
@@ -165,9 +165,9 @@ func (c *client) DeleteBucketObject(ctx context.Context, id bucketobject.BucketO
 
 	defer gcp.Close()
 
-	bucketID, err := bucket.ParseBucketIdentifier(id.Bucket)
-	if err != nil {
-		return err
+	bucketID, ok := id.Bucket.(identifier.BucketIdentifier)
+	if !ok {
+		return fmt.Errorf("field bucket must be a bucket identifier")
 	}
 
 	b := gcp.Bucket(bucketID.Name)

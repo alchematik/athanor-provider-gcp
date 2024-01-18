@@ -6,31 +6,22 @@ package bucket
 import (
 	"context"
 	"fmt"
-
 	sdk "github.com/alchematik/athanor-go/sdk/provider/value"
+	"github.com/alchematik/athanor-provider-gcp/gen/provider/identifier"
 )
 
 type Bucket struct {
-	Identifier BucketIdentifier
+	Identifier identifier.BucketIdentifier
 	Config     BucketConfig
 	Attrs      BucketAttrs
 }
 
 func (x Bucket) ToResourceValue() (sdk.Resource, error) {
-	id, err := x.Identifier.ToValue()
-	if err != nil {
-		return sdk.Resource{}, nil
-	}
+	id := x.Identifier.ToValue()
 
-	config, err := x.Config.ToValue()
-	if err != nil {
-		return sdk.Resource{}, nil
-	}
+	config := x.Config.ToValue()
 
-	attrs, err := x.Attrs.ToValue()
-	if err != nil {
-		return sdk.Resource{}, nil
-	}
+	attrs := x.Attrs.ToValue()
 
 	return sdk.Resource{
 		Identifier: id,
@@ -40,19 +31,19 @@ func (x Bucket) ToResourceValue() (sdk.Resource, error) {
 }
 
 type BucketGetter interface {
-	GetBucket(context.Context, BucketIdentifier) (Bucket, error)
+	GetBucket(context.Context, identifier.BucketIdentifier) (Bucket, error)
 }
 
 type BucketCreator interface {
-	CreateBucket(context.Context, BucketIdentifier, BucketConfig) (Bucket, error)
+	CreateBucket(context.Context, identifier.BucketIdentifier, BucketConfig) (Bucket, error)
 }
 
 type BucketUpdator interface {
-	UpdateBucket(context.Context, BucketIdentifier, BucketConfig, []sdk.UpdateMaskField) (Bucket, error)
+	UpdateBucket(context.Context, identifier.BucketIdentifier, BucketConfig, []sdk.UpdateMaskField) (Bucket, error)
 }
 
 type BucketDeleter interface {
-	DeleteBucket(context.Context, BucketIdentifier) error
+	DeleteBucket(context.Context, identifier.BucketIdentifier) error
 }
 
 type BucketHandler struct {
@@ -67,7 +58,7 @@ func (h BucketHandler) GetResource(ctx context.Context, id sdk.Identifier) (sdk.
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
 
-	idVal, err := ParseBucketIdentifier(id)
+	idVal, err := identifier.ParseBucketIdentifier(id)
 	if err != nil {
 		return sdk.Resource{}, err
 	}
@@ -85,7 +76,7 @@ func (h BucketHandler) CreateResource(ctx context.Context, id sdk.Identifier, co
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
 
-	idVal, err := ParseBucketIdentifier(id)
+	idVal, err := identifier.ParseBucketIdentifier(id)
 	if err != nil {
 		return sdk.Resource{}, err
 	}
@@ -108,7 +99,7 @@ func (h BucketHandler) UpdateResource(ctx context.Context, id sdk.Identifier, co
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
 
-	idVal, err := ParseBucketIdentifier(id)
+	idVal, err := identifier.ParseBucketIdentifier(id)
 	if err != nil {
 		return sdk.Resource{}, err
 	}
@@ -131,7 +122,7 @@ func (h BucketHandler) DeleteResource(ctx context.Context, id sdk.Identifier) er
 		return fmt.Errorf("unimplemented")
 	}
 
-	idVal, err := ParseBucketIdentifier(id)
+	idVal, err := identifier.ParseBucketIdentifier(id)
 	if err != nil {
 		return err
 	}
@@ -143,10 +134,10 @@ type BucketAttrs struct {
 	Created string
 }
 
-func (x BucketAttrs) ToValue() (any, error) {
+func (x BucketAttrs) ToValue() any {
 	return map[string]any{
-		"created": x.Created,
-	}, nil
+		"created": sdk.ToType(x.Created),
+	}
 }
 
 func ParseBucketAttrs(v any) (BucketAttrs, error) {
@@ -170,10 +161,10 @@ type BucketConfig struct {
 	Labels map[string]any
 }
 
-func (x BucketConfig) ToValue() (any, error) {
+func (x BucketConfig) ToValue() any {
 	return map[string]any{
-		"labels": x.Labels,
-	}, nil
+		"labels": sdk.ToType(x.Labels),
+	}
 }
 
 func ParseBucketConfig(v any) (BucketConfig, error) {
@@ -190,53 +181,5 @@ func ParseBucketConfig(v any) (BucketConfig, error) {
 
 	return BucketConfig{
 		Labels: labels,
-	}, nil
-}
-
-type BucketIdentifier struct {
-	Project  string
-	Location string
-	Name     string
-}
-
-func (x BucketIdentifier) ToValue() (any, error) {
-	return sdk.Identifier{
-		ResourceType: "bucket",
-		Value: map[string]any{
-			"project":  x.Project,
-			"location": x.Location,
-			"name":     x.Name,
-		},
-	}, nil
-}
-
-func (x BucketIdentifier) ResourceType() string {
-	return "bucket"
-}
-
-func ParseBucketIdentifier(v sdk.Identifier) (BucketIdentifier, error) {
-
-	m, err := sdk.Map(v.Value)
-	if err != nil {
-		return BucketIdentifier{}, nil
-	}
-
-	project, err := sdk.String(m["project"])
-	if err != nil {
-		return BucketIdentifier{}, nil
-	}
-	location, err := sdk.String(m["location"])
-	if err != nil {
-		return BucketIdentifier{}, nil
-	}
-	name, err := sdk.String(m["name"])
-	if err != nil {
-		return BucketIdentifier{}, nil
-	}
-
-	return BucketIdentifier{
-		Project:  project,
-		Location: location,
-		Name:     name,
 	}, nil
 }

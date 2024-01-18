@@ -3,6 +3,7 @@ module github.com/alchematik/athanor-provider-gcp
 go 1.21.5
 
 require (
+	cloud.google.com/go/functions v1.15.2
 	cloud.google.com/go/storage v1.36.0
 	github.com/alchematik/athanor-go v0.0.0-20240113021430-408d7b7731fa
 )
@@ -14,6 +15,7 @@ require (
 	cloud.google.com/go/compute v1.23.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.3 // indirect
+	cloud.google.com/go/longrunning v0.5.2 // indirect
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect

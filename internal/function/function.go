@@ -292,5 +292,17 @@ func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdent
 }
 
 func (c *client) DeleteFunction(ctx context.Context, id identifier.FunctionIdentifier) error {
-	return nil
+	gcp, err := cloudfunction.NewFunctionClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	operation, err := gcp.DeleteFunction(ctx, &functionspb.DeleteFunctionRequest{
+		Name: fmt.Sprintf("projects/%s/locations/%s/functions/%s", id.Project, id.Location, id.Name),
+	})
+	if err != nil {
+		return err
+	}
+
+	return operation.Wait(ctx)
 }

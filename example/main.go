@@ -76,7 +76,7 @@ func main() {
 		},
 	}
 	funcResource := athanor.Resource{
-		Exists:     true,
+		Exists:     false,
 		Provider:   provider,
 		Identifier: funcID,
 		Config:     funcConfig,

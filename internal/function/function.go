@@ -1,15 +1,11 @@
 package function
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"log"
-	"mime/multipart"
-	"net/http"
 	"os"
-	"path/filepath"
 
 	"github.com/alchematik/athanor-provider-gcp/gen/provider/function"
 	"github.com/alchematik/athanor-provider-gcp/gen/provider/identifier"

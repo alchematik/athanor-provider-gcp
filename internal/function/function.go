@@ -17,6 +17,7 @@ import (
 	"github.com/alchematik/athanor-go/sdk/provider/value"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	fieldmaskpb "google.golang.org/protobuf/types/known/fieldmaskpb"
 )
 
 func NewHandler() function.FunctionHandler {
@@ -199,58 +200,80 @@ func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdent
 		return function.Function{}, err
 	}
 
-	// TODO: Make idempotent by checking if there's an exising update operation.
-
-	labels := map[string]string{}
-	for k, v := range config.Labels {
-		str, ok := v.(string)
-		if !ok {
-			return function.Function{}, fmt.Errorf("label values must be string, got %T", v)
-		}
-		labels[k] = str
-	}
-
-	uploadURLRes, err := gcp.GenerateUploadUrl(ctx, &functionspb.GenerateUploadUrlRequest{
-		Parent: fmt.Sprintf("projects/%s/locations/%s", id.Project, id.Location),
-	})
-	if err != nil {
-		return function.Function{}, err
-	}
-
 	storageClient, err := storage.NewClient(ctx)
 	if err != nil {
 		return function.Function{}, err
 	}
 
-	objHandle := storageClient.Bucket(uploadURLRes.GetStorageSource().GetBucket()).Object(uploadURLRes.GetStorageSource().GetObject())
-	writer := objHandle.NewWriter(ctx)
-	file, err := os.Open(config.BuildConfig.Source.Path)
-	if err != nil {
-		return function.Function{}, err
+	// TODO: Make idempotent by checking if there's an exising update operation.
+
+	updateMask := fieldmaskpb.FieldMask{}
+	updateFunc := &functionspb.Function{
+		Name: fmt.Sprintf("projects/%s/locations/%s/functions/%s", id.Project, id.Location, id.Name),
+		// Environment: functionspb.Environment_GEN_2,
 	}
-	if _, err := io.Copy(writer, file); err != nil {
-		return function.Function{}, err
-	}
-	if err := writer.Close(); err != nil {
-		return function.Function{}, err
+	for _, m := range mask {
+		switch m.Name {
+		case "labels":
+			labels := map[string]string{}
+			for k, v := range config.Labels {
+				str, ok := v.(string)
+				if !ok {
+					return function.Function{}, fmt.Errorf("label values must be string, got %T", v)
+				}
+				labels[k] = str
+			}
+			updateFunc.Labels = labels
+			updateMask.Paths = append(updateMask.Paths, "labels")
+		case "description":
+			updateFunc.Description = config.Description
+			updateMask.Paths = append(updateMask.Paths, "description")
+		case "build_config":
+			bc := functionspb.BuildConfig{}
+			for _, f := range m.SubFields {
+				switch f.Name {
+				case "runtime":
+					bc.Runtime = config.BuildConfig.Runtime
+					updateMask.Paths = append(updateMask.Paths, "build_config.runtime")
+				case "entrypoint":
+					bc.EntryPoint = config.BuildConfig.Entrypoint
+					updateMask.Paths = append(updateMask.Paths, "build_config.entrypoint")
+				case "source":
+					uploadURLRes, err := gcp.GenerateUploadUrl(ctx, &functionspb.GenerateUploadUrlRequest{
+						Parent: fmt.Sprintf("projects/%s/locations/%s", id.Project, id.Location),
+					})
+					if err != nil {
+						return function.Function{}, err
+					}
+
+					objHandle := storageClient.Bucket(uploadURLRes.GetStorageSource().GetBucket()).Object(uploadURLRes.GetStorageSource().GetObject())
+					writer := objHandle.NewWriter(ctx)
+					file, err := os.Open(config.BuildConfig.Source.Path)
+					if err != nil {
+						return function.Function{}, err
+					}
+					if _, err := io.Copy(writer, file); err != nil {
+						return function.Function{}, err
+					}
+					if err := writer.Close(); err != nil {
+						return function.Function{}, err
+					}
+
+					bc.Source = &functionspb.Source{
+						Source: &functionspb.Source_StorageSource{
+							StorageSource: uploadURLRes.StorageSource,
+						},
+					}
+					updateMask.Paths = append(updateMask.Paths, "build_config.source")
+				}
+			}
+			updateFunc.BuildConfig = &bc
+		}
 	}
 
 	operation, err := gcp.UpdateFunction(ctx, &functionspb.UpdateFunctionRequest{
-		Function: &functionspb.Function{
-			Name:        fmt.Sprintf("projects/%s/locations/%s/functions/%s", id.Project, id.Location, id.Name),
-			Environment: functionspb.Environment_GEN_2,
-			Description: config.Description,
-			Labels:      labels,
-			BuildConfig: &functionspb.BuildConfig{
-				Runtime:    config.BuildConfig.Runtime,
-				EntryPoint: config.BuildConfig.Entrypoint,
-				Source: &functionspb.Source{
-					Source: &functionspb.Source_StorageSource{
-						StorageSource: uploadURLRes.StorageSource,
-					},
-				},
-			},
-		},
+		Function:   updateFunc,
+		UpdateMask: &updateMask,
 	})
 	if err != nil {
 		return function.Function{}, err

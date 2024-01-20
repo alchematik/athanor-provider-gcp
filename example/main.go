@@ -60,12 +60,13 @@ func main() {
 		Alias:    "my-function",
 		Project:  "textapp-389501",
 		Location: "us-east4",
-		Name:     "athanor-test-function-2",
+		Name:     "athanor-test-function",
 	}
 	funcConfig := function.FunctionConfig{
 		Description: "test function managed by athanor",
 		Labels: map[string]any{
-			"test": "true",
+			"test":          "true",
+			"another_label": "hi",
 		},
 		BuildConfig: function.BuildConfig{
 			Runtime:    "go121",
@@ -76,7 +77,7 @@ func main() {
 		},
 	}
 	funcResource := athanor.Resource{
-		Exists:     false,
+		Exists:     true,
 		Provider:   provider,
 		Identifier: funcID,
 		Config:     funcConfig,

@@ -12,8 +12,8 @@ import (
 
 type Bucket struct {
 	Identifier identifier.BucketIdentifier
-	Config     BucketConfig
-	Attrs      BucketAttrs
+	Config     Config
+	Attrs      Attrs
 }
 
 func (x Bucket) ToResourceValue() (sdk.Resource, error) {
@@ -35,11 +35,11 @@ type BucketGetter interface {
 }
 
 type BucketCreator interface {
-	CreateBucket(context.Context, identifier.BucketIdentifier, BucketConfig) (Bucket, error)
+	CreateBucket(context.Context, identifier.BucketIdentifier, Config) (Bucket, error)
 }
 
 type BucketUpdator interface {
-	UpdateBucket(context.Context, identifier.BucketIdentifier, BucketConfig, []sdk.UpdateMaskField) (Bucket, error)
+	UpdateBucket(context.Context, identifier.BucketIdentifier, Config, []sdk.UpdateMaskField) (Bucket, error)
 }
 
 type BucketDeleter interface {
@@ -81,7 +81,7 @@ func (h BucketHandler) CreateResource(ctx context.Context, id sdk.Identifier, co
 		return sdk.Resource{}, err
 	}
 
-	configVal, err := ParseBucketConfig(config)
+	configVal, err := ParseConfig(config)
 	if err != nil {
 		return sdk.Resource{}, err
 	}
@@ -104,7 +104,7 @@ func (h BucketHandler) UpdateResource(ctx context.Context, id sdk.Identifier, co
 		return sdk.Resource{}, err
 	}
 
-	configVal, err := ParseBucketConfig(config)
+	configVal, err := ParseConfig(config)
 	if err != nil {
 		return sdk.Resource{}, err
 	}
@@ -130,56 +130,56 @@ func (h BucketHandler) DeleteResource(ctx context.Context, id sdk.Identifier) er
 	return h.BucketDeleter.DeleteBucket(ctx, idVal)
 }
 
-type BucketAttrs struct {
-	Created string
+type Attrs struct {
+	Create string
 }
 
-func (x BucketAttrs) ToValue() any {
+func (x Attrs) ToValue() any {
 	return map[string]any{
-		"created": sdk.ToType(x.Created),
+		"create": sdk.ToType[any](x.Create),
 	}
 }
 
-func ParseBucketAttrs(v any) (BucketAttrs, error) {
+func ParseAttrs(v any) (Attrs, error) {
 
-	m, err := sdk.Map(v)
+	m, err := sdk.Map[any](v)
 	if err != nil {
-		return BucketAttrs{}, nil
+		return Attrs{}, nil
 	}
 
-	created, err := sdk.String(m["created"])
+	create, err := sdk.String(m["create"])
 	if err != nil {
-		return BucketAttrs{}, nil
+		return Attrs{}, nil
 	}
 
-	return BucketAttrs{
-		Created: created,
+	return Attrs{
+		Create: create,
 	}, nil
 }
 
-type BucketConfig struct {
-	Labels map[string]any
+type Config struct {
+	Labels map[string]string
 }
 
-func (x BucketConfig) ToValue() any {
+func (x Config) ToValue() any {
 	return map[string]any{
-		"labels": sdk.ToType(x.Labels),
+		"labels": sdk.ToType[string](x.Labels),
 	}
 }
 
-func ParseBucketConfig(v any) (BucketConfig, error) {
+func ParseConfig(v any) (Config, error) {
 
-	m, err := sdk.Map(v)
+	m, err := sdk.Map[any](v)
 	if err != nil {
-		return BucketConfig{}, nil
+		return Config{}, nil
 	}
 
-	labels, err := sdk.Map(m["labels"])
+	labels, err := sdk.Map[string](m["labels"])
 	if err != nil {
-		return BucketConfig{}, nil
+		return Config{}, nil
 	}
 
-	return BucketConfig{
+	return Config{
 		Labels: labels,
 	}, nil
 }

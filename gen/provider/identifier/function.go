@@ -8,18 +8,18 @@ import (
 )
 
 type FunctionIdentifier struct {
-	Project  string
 	Location string
 	Name     string
+	Project  string
 }
 
 func (x FunctionIdentifier) ToValue() sdk.Identifier {
 	return sdk.Identifier{
 		ResourceType: "function",
 		Value: map[string]any{
-			"project":  sdk.ToType(x.Project),
-			"location": sdk.ToType(x.Location),
-			"name":     sdk.ToType(x.Name),
+			"location": sdk.ToType[any](x.Location),
+			"name":     sdk.ToType[any](x.Name),
+			"project":  sdk.ToType[any](x.Project),
 		},
 	}
 }
@@ -30,15 +30,11 @@ func (x FunctionIdentifier) ResourceType() string {
 
 func ParseFunctionIdentifier(v sdk.Identifier) (FunctionIdentifier, error) {
 
-	m, err := sdk.Map(v.Value)
+	m, err := sdk.Map[any](v.Value)
 	if err != nil {
 		return FunctionIdentifier{}, nil
 	}
 
-	project, err := sdk.String(m["project"])
-	if err != nil {
-		return FunctionIdentifier{}, nil
-	}
 	location, err := sdk.String(m["location"])
 	if err != nil {
 		return FunctionIdentifier{}, nil
@@ -47,10 +43,14 @@ func ParseFunctionIdentifier(v sdk.Identifier) (FunctionIdentifier, error) {
 	if err != nil {
 		return FunctionIdentifier{}, nil
 	}
+	project, err := sdk.String(m["project"])
+	if err != nil {
+		return FunctionIdentifier{}, nil
+	}
 
 	return FunctionIdentifier{
-		Project:  project,
 		Location: location,
 		Name:     name,
+		Project:  project,
 	}, nil
 }

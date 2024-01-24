@@ -15,6 +15,8 @@ func main() {
 			bucketObject,
 			function,
 			serviceAccount,
+			api,
+			apiConfig,
 		},
 	}
 

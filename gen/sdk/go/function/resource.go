@@ -8,49 +8,48 @@ import (
 )
 
 type BuildConfig struct {
-	Runtime    any
 	Entrypoint any
+	Runtime    any
 	Source     any
 }
 
 func (x BuildConfig) ToExpr() any {
 	return map[string]any{
-		"runtime":    x.Runtime,
 		"entrypoint": x.Entrypoint,
+		"runtime":    x.Runtime,
 		"source":     x.Source,
 	}
 }
 
-type FunctionConfig struct {
+type Config struct {
+	BuildConfig any
 	Description any
 	Labels      any
-	BuildConfig any
 }
 
-func (x FunctionConfig) ToExpr() any {
+func (x Config) ToExpr() any {
 	return map[string]any{
+		"build_config": x.BuildConfig,
 		"description":  x.Description,
 		"labels":       x.Labels,
-		"build_config": x.BuildConfig,
 	}
 }
 
-type FunctionIdentifier struct {
-	Alias string
-
-	Project  any
+type Identifier struct {
+	Alias    string
 	Location any
 	Name     any
+	Project  any
 }
 
-func (x FunctionIdentifier) ToExpr() any {
+func (x Identifier) ToExpr() any {
 	return sdk.ResourceIdentifier{
 		ResourceType: "function",
 		Alias:        x.Alias,
 		Value: map[string]any{
-			"project":  x.Project,
 			"location": x.Location,
 			"name":     x.Name,
+			"project":  x.Project,
 		},
 	}
 }

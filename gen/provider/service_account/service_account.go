@@ -12,8 +12,8 @@ import (
 
 type ServiceAccount struct {
 	Identifier identifier.ServiceAccountIdentifier
-	Config     ServiceAccountConfig
-	Attrs      ServiceAccountAttrs
+	Config     Config
+	Attrs      Attrs
 }
 
 func (x ServiceAccount) ToResourceValue() (sdk.Resource, error) {
@@ -35,11 +35,11 @@ type ServiceAccountGetter interface {
 }
 
 type ServiceAccountCreator interface {
-	CreateServiceAccount(context.Context, identifier.ServiceAccountIdentifier, ServiceAccountConfig) (ServiceAccount, error)
+	CreateServiceAccount(context.Context, identifier.ServiceAccountIdentifier, Config) (ServiceAccount, error)
 }
 
 type ServiceAccountUpdator interface {
-	UpdateServiceAccount(context.Context, identifier.ServiceAccountIdentifier, ServiceAccountConfig, []sdk.UpdateMaskField) (ServiceAccount, error)
+	UpdateServiceAccount(context.Context, identifier.ServiceAccountIdentifier, Config, []sdk.UpdateMaskField) (ServiceAccount, error)
 }
 
 type ServiceAccountDeleter interface {
@@ -81,7 +81,7 @@ func (h ServiceAccountHandler) CreateResource(ctx context.Context, id sdk.Identi
 		return sdk.Resource{}, err
 	}
 
-	configVal, err := ParseServiceAccountConfig(config)
+	configVal, err := ParseConfig(config)
 	if err != nil {
 		return sdk.Resource{}, err
 	}
@@ -104,7 +104,7 @@ func (h ServiceAccountHandler) UpdateResource(ctx context.Context, id sdk.Identi
 		return sdk.Resource{}, err
 	}
 
-	configVal, err := ParseServiceAccountConfig(config)
+	configVal, err := ParseConfig(config)
 	if err != nil {
 		return sdk.Resource{}, err
 	}
@@ -130,70 +130,70 @@ func (h ServiceAccountHandler) DeleteResource(ctx context.Context, id sdk.Identi
 	return h.ServiceAccountDeleter.DeleteServiceAccount(ctx, idVal)
 }
 
-type ServiceAccountAttrs struct {
-	UniqueId string
+type Attrs struct {
 	Disabled bool
+	UniqueId string
 }
 
-func (x ServiceAccountAttrs) ToValue() any {
+func (x Attrs) ToValue() any {
 	return map[string]any{
-		"unique_id": sdk.ToType(x.UniqueId),
-		"disabled":  sdk.ToType(x.Disabled),
+		"disabled":  sdk.ToType[any](x.Disabled),
+		"unique_id": sdk.ToType[any](x.UniqueId),
 	}
 }
 
-func ParseServiceAccountAttrs(v any) (ServiceAccountAttrs, error) {
+func ParseAttrs(v any) (Attrs, error) {
 
-	m, err := sdk.Map(v)
+	m, err := sdk.Map[any](v)
 	if err != nil {
-		return ServiceAccountAttrs{}, nil
+		return Attrs{}, nil
 	}
 
-	unique_id, err := sdk.String(m["unique_id"])
-	if err != nil {
-		return ServiceAccountAttrs{}, nil
-	}
 	disabled, err := sdk.Bool(m["disabled"])
 	if err != nil {
-		return ServiceAccountAttrs{}, nil
+		return Attrs{}, nil
+	}
+	unique_id, err := sdk.String(m["unique_id"])
+	if err != nil {
+		return Attrs{}, nil
 	}
 
-	return ServiceAccountAttrs{
-		UniqueId: unique_id,
+	return Attrs{
 		Disabled: disabled,
+		UniqueId: unique_id,
 	}, nil
 }
 
-type ServiceAccountConfig struct {
-	DisplayName string
+type Config struct {
 	Description string
+	DisplayName string
 }
 
-func (x ServiceAccountConfig) ToValue() any {
+func (x Config) ToValue() any {
 	return map[string]any{
-		"display_name": sdk.ToType(x.DisplayName),
-		"description":  sdk.ToType(x.Description),
+		"description":  sdk.ToType[any](x.Description),
+		"display_name": sdk.ToType[any](x.DisplayName),
 	}
 }
 
-func ParseServiceAccountConfig(v any) (ServiceAccountConfig, error) {
+func ParseConfig(v any) (Config, error) {
 
-	m, err := sdk.Map(v)
+	m, err := sdk.Map[any](v)
 	if err != nil {
-		return ServiceAccountConfig{}, nil
+		return Config{}, nil
 	}
 
-	display_name, err := sdk.String(m["display_name"])
-	if err != nil {
-		return ServiceAccountConfig{}, nil
-	}
 	description, err := sdk.String(m["description"])
 	if err != nil {
-		return ServiceAccountConfig{}, nil
+		return Config{}, nil
+	}
+	display_name, err := sdk.String(m["display_name"])
+	if err != nil {
+		return Config{}, nil
 	}
 
-	return ServiceAccountConfig{
-		DisplayName: display_name,
+	return Config{
 		Description: description,
+		DisplayName: display_name,
 	}, nil
 }

@@ -51,11 +51,6 @@ func (c *client) GetFunction(ctx context.Context, id identifier.FunctionIdentifi
 		return function.Function{}, err
 	}
 
-	labels := map[string]any{}
-	for k, v := range res.GetLabels() {
-		labels[k] = v
-	}
-
 	storageSource := res.GetBuildConfig().GetSource().GetStorageSource()
 	bucketName := storageSource.GetBucket()
 	objectName := storageSource.GetObject()
@@ -74,9 +69,9 @@ func (c *client) GetFunction(ctx context.Context, id identifier.FunctionIdentifi
 
 	return function.Function{
 		Identifier: id,
-		Config: function.FunctionConfig{
+		Config: function.Config{
 			Description: res.GetDescription(),
-			Labels:      labels,
+			Labels:      res.GetLabels(),
 			BuildConfig: function.BuildConfig{
 				Runtime:    res.GetBuildConfig().GetRuntime(),
 				Entrypoint: res.GetBuildConfig().GetEntryPoint(),
@@ -85,13 +80,13 @@ func (c *client) GetFunction(ctx context.Context, id identifier.FunctionIdentifi
 				},
 			},
 		},
-		Attrs: function.FunctionAttrs{
+		Attrs: function.Attrs{
 			Url: res.Url,
 		},
 	}, nil
 }
 
-func (c *client) CreateFunction(ctx context.Context, id identifier.FunctionIdentifier, config function.FunctionConfig) (function.Function, error) {
+func (c *client) CreateFunction(ctx context.Context, id identifier.FunctionIdentifier, config function.Config) (function.Function, error) {
 	gcp, err := cloudfunction.NewFunctionClient(ctx)
 	if err != nil {
 		return function.Function{}, err
@@ -124,15 +119,6 @@ func (c *client) CreateFunction(ctx context.Context, id identifier.FunctionIdent
 		return function.Function{}, err
 	}
 
-	labels := map[string]string{}
-	for k, v := range config.Labels {
-		str, ok := v.(string)
-		if !ok {
-			return function.Function{}, fmt.Errorf("label values must be string, got %T", v)
-		}
-		labels[k] = str
-	}
-
 	// TODO: create the function.
 	operation, err := gcp.CreateFunction(ctx, &functionspb.CreateFunctionRequest{
 		Parent:     fmt.Sprintf("projects/%s/locations/%s", id.Project, id.Location),
@@ -141,7 +127,7 @@ func (c *client) CreateFunction(ctx context.Context, id identifier.FunctionIdent
 			Name:        fmt.Sprintf("projects/%s/locations/%s/functions/%s", id.Project, id.Location, id.Name),
 			Environment: functionspb.Environment_GEN_2,
 			Description: config.Description,
-			Labels:      labels,
+			Labels:      config.Labels,
 			BuildConfig: &functionspb.BuildConfig{
 				Runtime:    config.BuildConfig.Runtime,
 				EntryPoint: config.BuildConfig.Entrypoint,
@@ -164,11 +150,6 @@ func (c *client) CreateFunction(ctx context.Context, id identifier.FunctionIdent
 		return function.Function{}, err
 	}
 
-	outLabels := map[string]any{}
-	for k, v := range res.Labels {
-		outLabels[k] = v
-	}
-
 	endStorage := res.GetBuildConfig().GetSource().GetStorageSource()
 	objectAttrs, err := storageClient.Bucket(endStorage.GetBucket()).Object(endStorage.GetObject()).Attrs(ctx)
 	if err != nil {
@@ -177,9 +158,9 @@ func (c *client) CreateFunction(ctx context.Context, id identifier.FunctionIdent
 
 	return function.Function{
 		Identifier: id,
-		Config: function.FunctionConfig{
+		Config: function.Config{
 			Description: res.Description,
-			Labels:      outLabels,
+			Labels:      res.Labels,
 			BuildConfig: function.BuildConfig{
 				Runtime:    res.GetBuildConfig().GetRuntime(),
 				Entrypoint: res.GetBuildConfig().GetEntryPoint(),
@@ -188,13 +169,13 @@ func (c *client) CreateFunction(ctx context.Context, id identifier.FunctionIdent
 				},
 			},
 		},
-		Attrs: function.FunctionAttrs{
+		Attrs: function.Attrs{
 			Url: res.Url,
 		},
 	}, nil
 }
 
-func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdentifier, config function.FunctionConfig, mask []value.UpdateMaskField) (function.Function, error) {
+func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdentifier, config function.Config, mask []value.UpdateMaskField) (function.Function, error) {
 	gcp, err := cloudfunction.NewFunctionClient(ctx)
 	if err != nil {
 		return function.Function{}, err
@@ -215,15 +196,7 @@ func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdent
 	for _, m := range mask {
 		switch m.Name {
 		case "labels":
-			labels := map[string]string{}
-			for k, v := range config.Labels {
-				str, ok := v.(string)
-				if !ok {
-					return function.Function{}, fmt.Errorf("label values must be string, got %T", v)
-				}
-				labels[k] = str
-			}
-			updateFunc.Labels = labels
+			updateFunc.Labels = config.Labels
 			updateMask.Paths = append(updateMask.Paths, "labels")
 		case "description":
 			updateFunc.Description = config.Description
@@ -284,11 +257,6 @@ func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdent
 		return function.Function{}, err
 	}
 
-	outLabels := map[string]any{}
-	for k, v := range res.Labels {
-		outLabels[k] = v
-	}
-
 	endStorage := res.GetBuildConfig().GetSource().GetStorageSource()
 	objectAttrs, err := storageClient.Bucket(endStorage.GetBucket()).Object(endStorage.GetObject()).Attrs(ctx)
 	if err != nil {
@@ -297,9 +265,9 @@ func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdent
 
 	return function.Function{
 		Identifier: id,
-		Config: function.FunctionConfig{
+		Config: function.Config{
 			Description: res.Description,
-			Labels:      outLabels,
+			Labels:      res.Labels,
 			BuildConfig: function.BuildConfig{
 				Runtime:    res.GetBuildConfig().GetRuntime(),
 				Entrypoint: res.GetBuildConfig().GetEntryPoint(),
@@ -308,7 +276,7 @@ func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdent
 				},
 			},
 		},
-		Attrs: function.FunctionAttrs{
+		Attrs: function.Attrs{
 			Url: res.Url,
 		},
 	}, nil

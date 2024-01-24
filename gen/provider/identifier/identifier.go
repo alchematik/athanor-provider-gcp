@@ -16,6 +16,10 @@ func ParseIdentifier(v any) (sdk.ResourceIdentifier, error) {
 	}
 
 	switch id.ResourceType {
+	case "api":
+		return ParseApiIdentifier(id)
+	case "api_config":
+		return ParseApiConfigIdentifier(id)
 	case "bucket":
 		return ParseBucketIdentifier(id)
 	case "bucket_object":

@@ -16,8 +16,8 @@ func (x BucketObjectIdentifier) ToValue() sdk.Identifier {
 	return sdk.Identifier{
 		ResourceType: "bucket_object",
 		Value: map[string]any{
-			"bucket": sdk.ToType(x.Bucket),
-			"name":   sdk.ToType(x.Name),
+			"bucket": sdk.ToType[any](x.Bucket),
+			"name":   sdk.ToType[any](x.Name),
 		},
 	}
 }
@@ -28,7 +28,7 @@ func (x BucketObjectIdentifier) ResourceType() string {
 
 func ParseBucketObjectIdentifier(v sdk.Identifier) (BucketObjectIdentifier, error) {
 
-	m, err := sdk.Map(v.Value)
+	m, err := sdk.Map[any](v.Value)
 	if err != nil {
 		return BucketObjectIdentifier{}, nil
 	}

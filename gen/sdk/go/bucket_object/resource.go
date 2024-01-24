@@ -7,24 +7,23 @@ import (
 	sdk "github.com/alchematik/athanor-go/sdk/consumer"
 )
 
-type BucketObjectConfig struct {
+type Config struct {
 	Contents any
 }
 
-func (x BucketObjectConfig) ToExpr() any {
+func (x Config) ToExpr() any {
 	return map[string]any{
 		"contents": x.Contents,
 	}
 }
 
-type BucketObjectIdentifier struct {
-	Alias string
-
+type Identifier struct {
+	Alias  string
 	Bucket any
 	Name   any
 }
 
-func (x BucketObjectIdentifier) ToExpr() any {
+func (x Identifier) ToExpr() any {
 	return sdk.ResourceIdentifier{
 		ResourceType: "bucket_object",
 		Alias:        x.Alias,

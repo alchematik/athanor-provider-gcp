@@ -46,18 +46,18 @@ func (c *client) GetServiceAccount(ctx context.Context, id identifier.ServiceAcc
 
 	return serviceaccount.ServiceAccount{
 		Identifier: id,
-		Config: serviceaccount.ServiceAccountConfig{
+		Config: serviceaccount.Config{
 			DisplayName: req.GetDisplayName(),
 			Description: req.GetDescription(),
 		},
-		Attrs: serviceaccount.ServiceAccountAttrs{
+		Attrs: serviceaccount.Attrs{
 			UniqueId: req.GetUniqueId(),
 			Disabled: req.GetDisabled(),
 		},
 	}, nil
 }
 
-func (c *client) CreateServiceAccount(ctx context.Context, id identifier.ServiceAccountIdentifier, config serviceaccount.ServiceAccountConfig) (serviceaccount.ServiceAccount, error) {
+func (c *client) CreateServiceAccount(ctx context.Context, id identifier.ServiceAccountIdentifier, config serviceaccount.Config) (serviceaccount.ServiceAccount, error) {
 	iamClient, err := iamadmin.NewIamClient(ctx)
 	if err != nil {
 		return serviceaccount.ServiceAccount{}, err
@@ -77,18 +77,18 @@ func (c *client) CreateServiceAccount(ctx context.Context, id identifier.Service
 
 	return serviceaccount.ServiceAccount{
 		Identifier: id,
-		Config: serviceaccount.ServiceAccountConfig{
+		Config: serviceaccount.Config{
 			DisplayName: res.GetDisplayName(),
 			Description: res.GetDescription(),
 		},
-		Attrs: serviceaccount.ServiceAccountAttrs{
+		Attrs: serviceaccount.Attrs{
 			UniqueId: res.GetUniqueId(),
 			Disabled: res.GetDisabled(),
 		},
 	}, nil
 }
 
-func (c *client) UpdateServiceAccount(ctx context.Context, id identifier.ServiceAccountIdentifier, config serviceaccount.ServiceAccountConfig, mask []value.UpdateMaskField) (serviceaccount.ServiceAccount, error) {
+func (c *client) UpdateServiceAccount(ctx context.Context, id identifier.ServiceAccountIdentifier, config serviceaccount.Config, mask []value.UpdateMaskField) (serviceaccount.ServiceAccount, error) {
 	iamClient, err := iamadmin.NewIamClient(ctx)
 	if err != nil {
 		return serviceaccount.ServiceAccount{}, err
@@ -105,11 +105,11 @@ func (c *client) UpdateServiceAccount(ctx context.Context, id identifier.Service
 
 	return serviceaccount.ServiceAccount{
 		Identifier: id,
-		Config: serviceaccount.ServiceAccountConfig{
+		Config: serviceaccount.Config{
 			DisplayName: res.GetDisplayName(),
 			Description: res.GetDescription(),
 		},
-		Attrs: serviceaccount.ServiceAccountAttrs{
+		Attrs: serviceaccount.Attrs{
 			UniqueId: res.GetUniqueId(),
 			Disabled: res.GetDisabled(),
 		},

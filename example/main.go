@@ -14,13 +14,13 @@ import (
 func main() {
 	provider := athanor.Provider{Name: "gcp", Version: "v0.0.1"}
 
-	bucketID := bucket.BucketIdentifier{
+	bucketID := bucket.Identifier{
 		Alias:    "my-bucket",
 		Project:  "textapp-389501",
 		Location: "us-east4",
 		Name:     "athanor-test-bucket",
 	}
-	bucketConfig := bucket.BucketConfig{
+	bucketConfig := bucket.Config{
 		Labels: map[string]any{
 			"test": "hello_world",
 			"meow": "is_me",
@@ -36,13 +36,13 @@ func main() {
 	bp := athanor.Blueprint{}
 	bp = bp.WithResource(myBucket)
 
-	bucketObjectID := bucketobject.BucketObjectIdentifier{
+	bucketObjectID := bucketobject.Identifier{
 		Alias:  "my-bucket-object",
 		Bucket: bucketID,
 		Name:   "my-bucket-object",
 	}
 
-	bucketObjectConfig := bucketobject.BucketObjectConfig{
+	bucketObjectConfig := bucketobject.Config{
 		Contents: athanor.File{
 			Path: "../test_cloud_func.zip",
 		},
@@ -57,13 +57,13 @@ func main() {
 
 	bp = bp.WithResource(bucketObject)
 
-	funcID := function.FunctionIdentifier{
+	funcID := function.Identifier{
 		Alias:    "my-function",
 		Project:  "textapp-389501",
 		Location: "us-east4",
 		Name:     "athanor-test-function",
 	}
-	funcConfig := function.FunctionConfig{
+	funcConfig := function.Config{
 		Description: "test function managed by athanor",
 		Labels: map[string]any{
 			"test":          "true",
@@ -86,12 +86,12 @@ func main() {
 
 	bp = bp.WithResource(funcResource)
 
-	serviceAccountID := serviceaccount.ServiceAccountIdentifier{
+	serviceAccountID := serviceaccount.Identifier{
 		Alias:     "my-service-account",
 		Project:   "textapp-389501",
 		AccountId: "athanor-test",
 	}
-	serviceAccountConfig := serviceaccount.ServiceAccountConfig{
+	serviceAccountConfig := serviceaccount.Config{
 		Description: "Test service account",
 		DisplayName: "Athanor Test",
 	}

@@ -12,8 +12,8 @@ import (
 
 type Function struct {
 	Identifier identifier.FunctionIdentifier
-	Config     FunctionConfig
-	Attrs      FunctionAttrs
+	Config     Config
+	Attrs      Attrs
 }
 
 func (x Function) ToResourceValue() (sdk.Resource, error) {
@@ -35,11 +35,11 @@ type FunctionGetter interface {
 }
 
 type FunctionCreator interface {
-	CreateFunction(context.Context, identifier.FunctionIdentifier, FunctionConfig) (Function, error)
+	CreateFunction(context.Context, identifier.FunctionIdentifier, Config) (Function, error)
 }
 
 type FunctionUpdator interface {
-	UpdateFunction(context.Context, identifier.FunctionIdentifier, FunctionConfig, []sdk.UpdateMaskField) (Function, error)
+	UpdateFunction(context.Context, identifier.FunctionIdentifier, Config, []sdk.UpdateMaskField) (Function, error)
 }
 
 type FunctionDeleter interface {
@@ -81,7 +81,7 @@ func (h FunctionHandler) CreateResource(ctx context.Context, id sdk.Identifier, 
 		return sdk.Resource{}, err
 	}
 
-	configVal, err := ParseFunctionConfig(config)
+	configVal, err := ParseConfig(config)
 	if err != nil {
 		return sdk.Resource{}, err
 	}
@@ -104,7 +104,7 @@ func (h FunctionHandler) UpdateResource(ctx context.Context, id sdk.Identifier, 
 		return sdk.Resource{}, err
 	}
 
-	configVal, err := ParseFunctionConfig(config)
+	configVal, err := ParseConfig(config)
 	if err != nil {
 		return sdk.Resource{}, err
 	}
@@ -130,32 +130,59 @@ func (h FunctionHandler) DeleteResource(ctx context.Context, id sdk.Identifier) 
 	return h.FunctionDeleter.DeleteFunction(ctx, idVal)
 }
 
+type Attrs struct {
+	Url string
+}
+
+func (x Attrs) ToValue() any {
+	return map[string]any{
+		"url": sdk.ToType[any](x.Url),
+	}
+}
+
+func ParseAttrs(v any) (Attrs, error) {
+
+	m, err := sdk.Map[any](v)
+	if err != nil {
+		return Attrs{}, nil
+	}
+
+	url, err := sdk.String(m["url"])
+	if err != nil {
+		return Attrs{}, nil
+	}
+
+	return Attrs{
+		Url: url,
+	}, nil
+}
+
 type BuildConfig struct {
-	Runtime    string
 	Entrypoint string
+	Runtime    string
 	Source     sdk.File
 }
 
 func (x BuildConfig) ToValue() any {
 	return map[string]any{
-		"runtime":    sdk.ToType(x.Runtime),
-		"entrypoint": sdk.ToType(x.Entrypoint),
-		"source":     sdk.ToType(x.Source),
+		"entrypoint": sdk.ToType[any](x.Entrypoint),
+		"runtime":    sdk.ToType[any](x.Runtime),
+		"source":     sdk.ToType[any](x.Source),
 	}
 }
 
 func ParseBuildConfig(v any) (BuildConfig, error) {
 
-	m, err := sdk.Map(v)
+	m, err := sdk.Map[any](v)
 	if err != nil {
 		return BuildConfig{}, nil
 	}
 
-	runtime, err := sdk.String(m["runtime"])
+	entrypoint, err := sdk.String(m["entrypoint"])
 	if err != nil {
 		return BuildConfig{}, nil
 	}
-	entrypoint, err := sdk.String(m["entrypoint"])
+	runtime, err := sdk.String(m["runtime"])
 	if err != nil {
 		return BuildConfig{}, nil
 	}
@@ -165,76 +192,49 @@ func ParseBuildConfig(v any) (BuildConfig, error) {
 	}
 
 	return BuildConfig{
-		Runtime:    runtime,
 		Entrypoint: entrypoint,
+		Runtime:    runtime,
 		Source:     source,
 	}, nil
 }
 
-type FunctionAttrs struct {
-	Url string
-}
-
-func (x FunctionAttrs) ToValue() any {
-	return map[string]any{
-		"url": sdk.ToType(x.Url),
-	}
-}
-
-func ParseFunctionAttrs(v any) (FunctionAttrs, error) {
-
-	m, err := sdk.Map(v)
-	if err != nil {
-		return FunctionAttrs{}, nil
-	}
-
-	url, err := sdk.String(m["url"])
-	if err != nil {
-		return FunctionAttrs{}, nil
-	}
-
-	return FunctionAttrs{
-		Url: url,
-	}, nil
-}
-
-type FunctionConfig struct {
-	Description string
-	Labels      map[string]any
+type Config struct {
 	BuildConfig BuildConfig
+	Description string
+	Labels      map[string]string
 }
 
-func (x FunctionConfig) ToValue() any {
+func (x Config) ToValue() any {
 	return map[string]any{
-		"description":  sdk.ToType(x.Description),
-		"labels":       sdk.ToType(x.Labels),
-		"build_config": sdk.ToType(x.BuildConfig),
+		"build_config": sdk.ToType[any](x.BuildConfig),
+		"description":  sdk.ToType[any](x.Description),
+		"labels":       sdk.ToType[string](x.Labels),
 	}
 }
 
-func ParseFunctionConfig(v any) (FunctionConfig, error) {
+func ParseConfig(v any) (Config, error) {
 
-	m, err := sdk.Map(v)
+	m, err := sdk.Map[any](v)
 	if err != nil {
-		return FunctionConfig{}, nil
+		return Config{}, nil
 	}
 
-	description, err := sdk.String(m["description"])
-	if err != nil {
-		return FunctionConfig{}, nil
-	}
-	labels, err := sdk.Map(m["labels"])
-	if err != nil {
-		return FunctionConfig{}, nil
-	}
 	build_config, err := ParseBuildConfig(m["build_config"])
 	if err != nil {
-		return FunctionConfig{}, nil
+		return Config{}, nil
+	}
+	description, err := sdk.String(m["description"])
+	if err != nil {
+		return Config{}, nil
+	}
+	labels, err := sdk.Map[string](m["labels"])
+	if err != nil {
+		return Config{}, nil
 	}
 
-	return FunctionConfig{
+	return Config{
+		BuildConfig: build_config,
 		Description: description,
 		Labels:      labels,
-		BuildConfig: build_config,
 	}, nil
 }

@@ -4,8 +4,11 @@ go 1.21.5
 
 require (
 	cloud.google.com/go/functions v1.15.2
+	cloud.google.com/go/iam v1.1.3
 	cloud.google.com/go/storage v1.36.0
 	github.com/alchematik/athanor-go v0.0.0-20240113021430-408d7b7731fa
+	google.golang.org/grpc v1.60.1
+	google.golang.org/protobuf v1.32.0
 )
 
 replace github.com/alchematik/athanor-go => ../athanor-go
@@ -14,7 +17,6 @@ require (
 	cloud.google.com/go v0.110.8 // indirect
 	cloud.google.com/go/compute v1.23.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
-	cloud.google.com/go/iam v1.1.3 // indirect
 	cloud.google.com/go/longrunning v0.5.2 // indirect
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -44,6 +46,4 @@ require (
 	google.golang.org/genproto v0.0.0-20231016165738-49dd2c1f3d0b // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20231016165738-49dd2c1f3d0b // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231030173426-d783a09b4405 // indirect
-	google.golang.org/grpc v1.60.1 // indirect
-	google.golang.org/protobuf v1.32.0 // indirect
 )

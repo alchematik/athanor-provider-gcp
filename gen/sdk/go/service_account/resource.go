@@ -7,32 +7,31 @@ import (
 	sdk "github.com/alchematik/athanor-go/sdk/consumer"
 )
 
-type ServiceAccountConfig struct {
-	DisplayName any
+type Config struct {
 	Description any
+	DisplayName any
 }
 
-func (x ServiceAccountConfig) ToExpr() any {
+func (x Config) ToExpr() any {
 	return map[string]any{
-		"display_name": x.DisplayName,
 		"description":  x.Description,
+		"display_name": x.DisplayName,
 	}
 }
 
-type ServiceAccountIdentifier struct {
-	Alias string
-
-	Project   any
+type Identifier struct {
+	Alias     string
 	AccountId any
+	Project   any
 }
 
-func (x ServiceAccountIdentifier) ToExpr() any {
+func (x Identifier) ToExpr() any {
 	return sdk.ResourceIdentifier{
 		ResourceType: "service_account",
 		Alias:        x.Alias,
 		Value: map[string]any{
-			"project":    x.Project,
 			"account_id": x.AccountId,
+			"project":    x.Project,
 		},
 	}
 }

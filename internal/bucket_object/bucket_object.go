@@ -52,18 +52,18 @@ func (c *client) GetBucketObject(ctx context.Context, id identifier.BucketObject
 
 	return bucketobject.BucketObject{
 		Identifier: id,
-		Config: bucketobject.BucketObjectConfig{
+		Config: bucketobject.Config{
 			Contents: value.File{
 				Checksum: fmt.Sprintf("%d", attrs.CRC32C),
 			},
 		},
-		Attrs: bucketobject.BucketObjectAttrs{
-			Created: attrs.Created.String(),
+		Attrs: bucketobject.Attrs{
+			Create: attrs.Created.String(),
 		},
 	}, nil
 }
 
-func (c *client) CreateBucketObject(ctx context.Context, id identifier.BucketObjectIdentifier, config bucketobject.BucketObjectConfig) (bucketobject.BucketObject, error) {
+func (c *client) CreateBucketObject(ctx context.Context, id identifier.BucketObjectIdentifier, config bucketobject.Config) (bucketobject.BucketObject, error) {
 	gcp, err := storage.NewClient(ctx)
 	if err != nil {
 		return bucketobject.BucketObject{}, fmt.Errorf("error creating storage client: %v", err)
@@ -99,18 +99,18 @@ func (c *client) CreateBucketObject(ctx context.Context, id identifier.BucketObj
 
 	return bucketobject.BucketObject{
 		Identifier: id,
-		Config: bucketobject.BucketObjectConfig{
+		Config: bucketobject.Config{
 			Contents: value.File{
 				Checksum: fmt.Sprintf("%d", attrs.CRC32C),
 			},
 		},
-		Attrs: bucketobject.BucketObjectAttrs{
-			Created: attrs.Created.String(),
+		Attrs: bucketobject.Attrs{
+			Create: attrs.Created.String(),
 		},
 	}, nil
 }
 
-func (c *client) UpdateBucketObject(ctx context.Context, id identifier.BucketObjectIdentifier, config bucketobject.BucketObjectConfig, mask []value.UpdateMaskField) (bucketobject.BucketObject, error) {
+func (c *client) UpdateBucketObject(ctx context.Context, id identifier.BucketObjectIdentifier, config bucketobject.Config, mask []value.UpdateMaskField) (bucketobject.BucketObject, error) {
 	gcp, err := storage.NewClient(ctx)
 	if err != nil {
 		return bucketobject.BucketObject{}, fmt.Errorf("error creating storage client: %v", err)
@@ -146,13 +146,13 @@ func (c *client) UpdateBucketObject(ctx context.Context, id identifier.BucketObj
 
 	return bucketobject.BucketObject{
 		Identifier: id,
-		Config: bucketobject.BucketObjectConfig{
+		Config: bucketobject.Config{
 			Contents: value.File{
 				Checksum: fmt.Sprintf("%d", attrs.CRC32C),
 			},
 		},
-		Attrs: bucketobject.BucketObjectAttrs{
-			Created: attrs.Created.String(),
+		Attrs: bucketobject.Attrs{
+			Create: attrs.Created.String(),
 		},
 	}, nil
 }

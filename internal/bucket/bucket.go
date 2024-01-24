@@ -45,23 +45,18 @@ func (c *client) GetBucket(ctx context.Context, id identifier.BucketIdentifier) 
 		return bucket.Bucket{}, fmt.Errorf("oh no: %v", err)
 	}
 
-	labels := map[string]any{}
-	for k, v := range attrs.Labels {
-		labels[k] = v
-	}
-
 	return bucket.Bucket{
 		Identifier: id,
-		Config: bucket.BucketConfig{
-			Labels: labels,
+		Config: bucket.Config{
+			Labels: attrs.Labels,
 		},
-		Attrs: bucket.BucketAttrs{
-			Created: attrs.Created.String(),
+		Attrs: bucket.Attrs{
+			Create: attrs.Created.String(),
 		},
 	}, nil
 }
 
-func (c *client) CreateBucket(ctx context.Context, id identifier.BucketIdentifier, config bucket.BucketConfig) (bucket.Bucket, error) {
+func (c *client) CreateBucket(ctx context.Context, id identifier.BucketIdentifier, config bucket.Config) (bucket.Bucket, error) {
 	gcp, err := storage.NewClient(ctx)
 	if err != nil {
 		return bucket.Bucket{}, err
@@ -69,18 +64,9 @@ func (c *client) CreateBucket(ctx context.Context, id identifier.BucketIdentifie
 
 	defer gcp.Close()
 
-	labels := map[string]string{}
-	for k, v := range config.Labels {
-		str, ok := v.(string)
-		if !ok {
-			return bucket.Bucket{}, fmt.Errorf("expected label value for key %q to be a string, got %T\n", k, v)
-		}
-		labels[k] = str
-	}
-
 	b := gcp.Bucket(id.Name)
 	if err := b.Create(ctx, id.Project, &storage.BucketAttrs{
-		Labels:   labels,
+		Labels:   config.Labels,
 		Location: id.Location,
 	}); err != nil {
 		return bucket.Bucket{}, err
@@ -91,23 +77,18 @@ func (c *client) CreateBucket(ctx context.Context, id identifier.BucketIdentifie
 		return bucket.Bucket{}, err
 	}
 
-	resLabels := map[string]any{}
-	for k, v := range attrs.Labels {
-		resLabels[k] = v
-	}
-
 	return bucket.Bucket{
 		Identifier: id,
-		Config: bucket.BucketConfig{
-			Labels: resLabels,
+		Config: bucket.Config{
+			Labels: attrs.Labels,
 		},
-		Attrs: bucket.BucketAttrs{
-			Created: attrs.Created.String(),
+		Attrs: bucket.Attrs{
+			Create: attrs.Created.String(),
 		},
 	}, nil
 }
 
-func (c *client) UpdateBucket(ctx context.Context, id identifier.BucketIdentifier, config bucket.BucketConfig, mask []value.UpdateMaskField) (bucket.Bucket, error) {
+func (c *client) UpdateBucket(ctx context.Context, id identifier.BucketIdentifier, config bucket.Config, mask []value.UpdateMaskField) (bucket.Bucket, error) {
 	gcp, err := storage.NewClient(ctx)
 	if err != nil {
 		return bucket.Bucket{}, err
@@ -128,11 +109,7 @@ func (c *client) UpdateBucket(ctx context.Context, id identifier.BucketIdentifie
 						return bucket.Bucket{}, fmt.Errorf("value for label %q is missing", label.Name)
 					}
 
-					str, ok := val.(string)
-					if !ok {
-						return bucket.Bucket{}, fmt.Errorf("value for label %q is not a string", label.Name)
-					}
-					toUpdate.SetLabel(label.Name, str)
+					toUpdate.SetLabel(label.Name, val)
 				}
 			}
 		}
@@ -144,18 +121,13 @@ func (c *client) UpdateBucket(ctx context.Context, id identifier.BucketIdentifie
 		return bucket.Bucket{}, err
 	}
 
-	labels := map[string]any{}
-	for k, v := range attrs.Labels {
-		labels[k] = v
-	}
-
 	return bucket.Bucket{
 		Identifier: id,
-		Config: bucket.BucketConfig{
-			Labels: labels,
+		Config: bucket.Config{
+			Labels: attrs.Labels,
 		},
-		Attrs: bucket.BucketAttrs{
-			Created: attrs.Created.String(),
+		Attrs: bucket.Attrs{
+			Create: attrs.Created.String(),
 		},
 	}, nil
 }

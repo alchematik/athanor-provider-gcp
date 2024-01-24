@@ -6,40 +6,15 @@ import (
 
 var bucket = schema.ResourceSchema{
 	Type: "bucket",
-	Identifier: schema.FieldSchema{
-		IsIdentifier: true,
-		Type:         schema.FieldTypeStruct,
-		Fields: []schema.FieldSchema{
-			{
-				Name: "project",
-				Type: schema.FieldTypeString,
-			},
-			{
-				Name: "location",
-				Type: schema.FieldTypeString,
-			},
-			{
-				Name: "name",
-				Type: schema.FieldTypeString,
-			},
-		},
-	},
-	Config: schema.FieldSchema{
-		Type: schema.FieldTypeStruct,
-		Fields: []schema.FieldSchema{
-			{
-				Name: "labels",
-				Type: schema.FieldTypeMap,
-			},
-		},
-	},
-	Attrs: schema.FieldSchema{
-		Type: schema.FieldTypeStruct,
-		Fields: []schema.FieldSchema{
-			{
-				Name: "created",
-				Type: schema.FieldTypeString,
-			},
-		},
-	},
+	Identifier: schema.Struct("identifier", map[string]schema.FieldSchema{
+		"project":  schema.String(),
+		"location": schema.String(),
+		"name":     schema.String(),
+	}),
+	Config: schema.Struct("config", map[string]schema.FieldSchema{
+		"labels": schema.Map(schema.String()),
+	}),
+	Attrs: schema.Struct("attrs", map[string]schema.FieldSchema{
+		"create": schema.String(),
+	}),
 }

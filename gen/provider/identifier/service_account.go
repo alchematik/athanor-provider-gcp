@@ -8,16 +8,16 @@ import (
 )
 
 type ServiceAccountIdentifier struct {
-	Project   string
 	AccountId string
+	Project   string
 }
 
 func (x ServiceAccountIdentifier) ToValue() sdk.Identifier {
 	return sdk.Identifier{
 		ResourceType: "service_account",
 		Value: map[string]any{
-			"project":    sdk.ToType(x.Project),
-			"account_id": sdk.ToType(x.AccountId),
+			"account_id": sdk.ToType[any](x.AccountId),
+			"project":    sdk.ToType[any](x.Project),
 		},
 	}
 }
@@ -28,22 +28,22 @@ func (x ServiceAccountIdentifier) ResourceType() string {
 
 func ParseServiceAccountIdentifier(v sdk.Identifier) (ServiceAccountIdentifier, error) {
 
-	m, err := sdk.Map(v.Value)
+	m, err := sdk.Map[any](v.Value)
 	if err != nil {
 		return ServiceAccountIdentifier{}, nil
 	}
 
-	project, err := sdk.String(m["project"])
+	account_id, err := sdk.String(m["account_id"])
 	if err != nil {
 		return ServiceAccountIdentifier{}, nil
 	}
-	account_id, err := sdk.String(m["account_id"])
+	project, err := sdk.String(m["project"])
 	if err != nil {
 		return ServiceAccountIdentifier{}, nil
 	}
 
 	return ServiceAccountIdentifier{
-		Project:   project,
 		AccountId: account_id,
+		Project:   project,
 	}, nil
 }

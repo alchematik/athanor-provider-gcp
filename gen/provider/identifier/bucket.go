@@ -8,18 +8,18 @@ import (
 )
 
 type BucketIdentifier struct {
-	Project  string
 	Location string
 	Name     string
+	Project  string
 }
 
 func (x BucketIdentifier) ToValue() sdk.Identifier {
 	return sdk.Identifier{
 		ResourceType: "bucket",
 		Value: map[string]any{
-			"project":  sdk.ToType(x.Project),
-			"location": sdk.ToType(x.Location),
-			"name":     sdk.ToType(x.Name),
+			"location": sdk.ToType[any](x.Location),
+			"name":     sdk.ToType[any](x.Name),
+			"project":  sdk.ToType[any](x.Project),
 		},
 	}
 }
@@ -30,15 +30,11 @@ func (x BucketIdentifier) ResourceType() string {
 
 func ParseBucketIdentifier(v sdk.Identifier) (BucketIdentifier, error) {
 
-	m, err := sdk.Map(v.Value)
+	m, err := sdk.Map[any](v.Value)
 	if err != nil {
 		return BucketIdentifier{}, nil
 	}
 
-	project, err := sdk.String(m["project"])
-	if err != nil {
-		return BucketIdentifier{}, nil
-	}
 	location, err := sdk.String(m["location"])
 	if err != nil {
 		return BucketIdentifier{}, nil
@@ -47,10 +43,14 @@ func ParseBucketIdentifier(v sdk.Identifier) (BucketIdentifier, error) {
 	if err != nil {
 		return BucketIdentifier{}, nil
 	}
+	project, err := sdk.String(m["project"])
+	if err != nil {
+		return BucketIdentifier{}, nil
+	}
 
 	return BucketIdentifier{
-		Project:  project,
 		Location: location,
 		Name:     name,
+		Project:  project,
 	}, nil
 }

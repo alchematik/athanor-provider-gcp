@@ -22,6 +22,8 @@ func ParseIdentifier(v any) (sdk.ResourceIdentifier, error) {
 		return ParseBucketObjectIdentifier(id)
 	case "function":
 		return ParseFunctionIdentifier(id)
+	case "service_account":
+		return ParseServiceAccountIdentifier(id)
 
 	default:
 		return nil, fmt.Errorf("invalid resource type: %s", id.ResourceType)

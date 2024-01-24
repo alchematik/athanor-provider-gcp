@@ -6,6 +6,7 @@ import (
 	"github.com/alchematik/athanor-provider-gcp/gen/sdk/go/bucket"
 	bucketobject "github.com/alchematik/athanor-provider-gcp/gen/sdk/go/bucket_object"
 	"github.com/alchematik/athanor-provider-gcp/gen/sdk/go/function"
+	serviceaccount "github.com/alchematik/athanor-provider-gcp/gen/sdk/go/service_account"
 
 	athanor "github.com/alchematik/athanor-go/sdk/consumer"
 )
@@ -84,6 +85,24 @@ func main() {
 	}
 
 	bp = bp.WithResource(funcResource)
+
+	serviceAccountID := serviceaccount.ServiceAccountIdentifier{
+		Alias:     "my-service-account",
+		Project:   "textapp-389501",
+		AccountId: "athanor-test",
+	}
+	serviceAccountConfig := serviceaccount.ServiceAccountConfig{
+		Description: "Test service account",
+		DisplayName: "Athanor Test",
+	}
+	serviceAccountResource := athanor.Resource{
+		Exists:     true,
+		Provider:   provider,
+		Identifier: serviceAccountID,
+		Config:     serviceAccountConfig,
+	}
+
+	bp = bp.WithResource(serviceAccountResource)
 
 	if err := athanor.Build(bp); err != nil {
 		log.Fatalf("error building blueprint: %v", err)

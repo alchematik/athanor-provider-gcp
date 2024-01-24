@@ -14,6 +14,7 @@ func main() {
 			bucket,
 			bucketObject,
 			function,
+			serviceAccount,
 		},
 	}
 

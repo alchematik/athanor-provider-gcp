@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 
+	"github.com/alchematik/athanor-provider-gcp/gen/sdk/go/api"
+	apiconfig "github.com/alchematik/athanor-provider-gcp/gen/sdk/go/api_config"
 	"github.com/alchematik/athanor-provider-gcp/gen/sdk/go/bucket"
 	bucketobject "github.com/alchematik/athanor-provider-gcp/gen/sdk/go/bucket_object"
 	"github.com/alchematik/athanor-provider-gcp/gen/sdk/go/function"
@@ -103,6 +105,49 @@ func main() {
 	}
 
 	bp = bp.WithResource(serviceAccountResource)
+
+	apiID := api.Identifier{
+		Alias:   "my-api",
+		ApiId:   "athanor-test",
+		Project: "textapp-389501",
+	}
+	apiConfig := api.Config{
+		DisplayName: "test API for Athanor",
+		Labels: map[string]any{
+			"hello": "world",
+		},
+	}
+	apiResource := athanor.Resource{
+		Exists:     true,
+		Provider:   provider,
+		Identifier: apiID,
+		Config:     apiConfig,
+	}
+
+	bp = bp.WithResource(apiResource)
+
+	apiConfigID := apiconfig.Identifier{
+		Alias:          "my-api-config",
+		Api:            apiID,
+		ApiConfigId:    "athanor-test-config",
+		ServiceAccount: serviceAccountID,
+	}
+	apiConfigConfig := apiconfig.Config{
+		DisplayName: "Athanor test API config!",
+		OpenApiDocuments: []any{
+			athanor.File{
+				Path: "example/openapi.yml",
+			},
+		},
+	}
+	apiConfigResource := athanor.Resource{
+		Exists:     true,
+		Provider:   provider,
+		Identifier: apiConfigID,
+		Config:     apiConfigConfig,
+	}
+
+	bp = bp.WithResource(apiConfigResource)
 
 	if err := athanor.Build(bp); err != nil {
 		log.Fatalf("error building blueprint: %v", err)

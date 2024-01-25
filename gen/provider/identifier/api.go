@@ -4,6 +4,8 @@
 package identifier
 
 import (
+	"fmt"
+
 	sdk "github.com/alchematik/athanor-go/sdk/provider/value"
 )
 
@@ -30,16 +32,16 @@ func ParseApiIdentifier(v sdk.Identifier) (ApiIdentifier, error) {
 
 	m, err := sdk.Map[any](v.Value)
 	if err != nil {
-		return ApiIdentifier{}, nil
+		return ApiIdentifier{}, fmt.Errorf("error parsing api_identifier: %v", err)
 	}
 
 	api_id, err := sdk.String(m["api_id"])
 	if err != nil {
-		return ApiIdentifier{}, nil
+		return ApiIdentifier{}, fmt.Errorf("error parsing api_identifier: %v", err)
 	}
 	project, err := sdk.String(m["project"])
 	if err != nil {
-		return ApiIdentifier{}, nil
+		return ApiIdentifier{}, fmt.Errorf("error parsing api_identifier: %v", err)
 	}
 
 	return ApiIdentifier{

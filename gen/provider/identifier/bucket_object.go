@@ -4,6 +4,8 @@
 package identifier
 
 import (
+	"fmt"
+
 	sdk "github.com/alchematik/athanor-go/sdk/provider/value"
 )
 
@@ -30,16 +32,16 @@ func ParseBucketObjectIdentifier(v sdk.Identifier) (BucketObjectIdentifier, erro
 
 	m, err := sdk.Map[any](v.Value)
 	if err != nil {
-		return BucketObjectIdentifier{}, nil
+		return BucketObjectIdentifier{}, fmt.Errorf("error parsing bucket_object_identifier: %v", err)
 	}
 
 	bucket, err := ParseIdentifier(m["bucket"])
 	if err != nil {
-		return BucketObjectIdentifier{}, nil
+		return BucketObjectIdentifier{}, fmt.Errorf("error parsing bucket_object_identifier: %v", err)
 	}
 	name, err := sdk.String(m["name"])
 	if err != nil {
-		return BucketObjectIdentifier{}, nil
+		return BucketObjectIdentifier{}, fmt.Errorf("error parsing bucket_object_identifier: %v", err)
 	}
 
 	return BucketObjectIdentifier{

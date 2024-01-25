@@ -154,12 +154,12 @@ func ParseAttrs(v any) (Attrs, error) {
 
 	m, err := sdk.Map[any](v)
 	if err != nil {
-		return Attrs{}, nil
+		return Attrs{}, fmt.Errorf("error parsing attrs: %v", err)
 	}
 
 	create, err := sdk.String(m["create"])
 	if err != nil {
-		return Attrs{}, nil
+		return Attrs{}, fmt.Errorf("error parsing attrs for bucket: %v", err)
 	}
 
 	return Attrs{
@@ -181,12 +181,12 @@ func ParseConfig(v any) (Config, error) {
 
 	m, err := sdk.Map[any](v)
 	if err != nil {
-		return Config{}, nil
+		return Config{}, fmt.Errorf("error parsing config: %v", err)
 	}
 
 	labels, err := sdk.Map[string](m["labels"])
 	if err != nil {
-		return Config{}, nil
+		return Config{}, fmt.Errorf("error parsing config for bucket: %v", err)
 	}
 
 	return Config{

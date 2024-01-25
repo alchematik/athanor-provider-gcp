@@ -4,20 +4,24 @@
 package identifier
 
 import (
+	"fmt"
+
 	sdk "github.com/alchematik/athanor-go/sdk/provider/value"
 )
 
 type ApiConfigIdentifier struct {
-	Api         sdk.ResourceIdentifier
-	ApiConfigId string
+	Api            sdk.ResourceIdentifier
+	ApiConfigId    string
+	ServiceAccount sdk.ResourceIdentifier
 }
 
 func (x ApiConfigIdentifier) ToValue() sdk.Identifier {
 	return sdk.Identifier{
 		ResourceType: "api_config",
 		Value: map[string]any{
-			"api":           sdk.ToType[any](x.Api),
-			"api_config_id": sdk.ToType[any](x.ApiConfigId),
+			"api":             sdk.ToType[any](x.Api),
+			"api_config_id":   sdk.ToType[any](x.ApiConfigId),
+			"service_account": sdk.ToType[any](x.ServiceAccount),
 		},
 	}
 }
@@ -30,20 +34,25 @@ func ParseApiConfigIdentifier(v sdk.Identifier) (ApiConfigIdentifier, error) {
 
 	m, err := sdk.Map[any](v.Value)
 	if err != nil {
-		return ApiConfigIdentifier{}, nil
+		return ApiConfigIdentifier{}, fmt.Errorf("error parsing api_config_identifier: %v", err)
 	}
 
 	api, err := ParseIdentifier(m["api"])
 	if err != nil {
-		return ApiConfigIdentifier{}, nil
+		return ApiConfigIdentifier{}, fmt.Errorf("error parsing api_config_identifier: %v", err)
 	}
 	api_config_id, err := sdk.String(m["api_config_id"])
 	if err != nil {
-		return ApiConfigIdentifier{}, nil
+		return ApiConfigIdentifier{}, fmt.Errorf("error parsing api_config_identifier: %v", err)
+	}
+	service_account, err := ParseIdentifier(m["service_account"])
+	if err != nil {
+		return ApiConfigIdentifier{}, fmt.Errorf("error parsing api_config_identifier: %v", err)
 	}
 
 	return ApiConfigIdentifier{
-		Api:         api,
-		ApiConfigId: api_config_id,
+		Api:            api,
+		ApiConfigId:    api_config_id,
+		ServiceAccount: service_account,
 	}, nil
 }

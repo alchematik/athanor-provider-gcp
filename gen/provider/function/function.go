@@ -154,12 +154,12 @@ func ParseAttrs(v any) (Attrs, error) {
 
 	m, err := sdk.Map[any](v)
 	if err != nil {
-		return Attrs{}, nil
+		return Attrs{}, fmt.Errorf("error parsing attrs: %v", err)
 	}
 
 	url, err := sdk.String(m["url"])
 	if err != nil {
-		return Attrs{}, nil
+		return Attrs{}, fmt.Errorf("error parsing attrs for function: %v", err)
 	}
 
 	return Attrs{
@@ -185,20 +185,20 @@ func ParseBuildConfig(v any) (BuildConfig, error) {
 
 	m, err := sdk.Map[any](v)
 	if err != nil {
-		return BuildConfig{}, nil
+		return BuildConfig{}, fmt.Errorf("error parsing build_config: %v", err)
 	}
 
 	entrypoint, err := sdk.String(m["entrypoint"])
 	if err != nil {
-		return BuildConfig{}, nil
+		return BuildConfig{}, fmt.Errorf("error parsing build_config for function: %v", err)
 	}
 	runtime, err := sdk.String(m["runtime"])
 	if err != nil {
-		return BuildConfig{}, nil
+		return BuildConfig{}, fmt.Errorf("error parsing build_config for function: %v", err)
 	}
 	source, err := sdk.ParseFile(m["source"])
 	if err != nil {
-		return BuildConfig{}, nil
+		return BuildConfig{}, fmt.Errorf("error parsing build_config for function: %v", err)
 	}
 
 	return BuildConfig{
@@ -226,20 +226,20 @@ func ParseConfig(v any) (Config, error) {
 
 	m, err := sdk.Map[any](v)
 	if err != nil {
-		return Config{}, nil
+		return Config{}, fmt.Errorf("error parsing config: %v", err)
 	}
 
 	build_config, err := ParseBuildConfig(m["build_config"])
 	if err != nil {
-		return Config{}, nil
+		return Config{}, fmt.Errorf("error parsing config for function: %v", err)
 	}
 	description, err := sdk.String(m["description"])
 	if err != nil {
-		return Config{}, nil
+		return Config{}, fmt.Errorf("error parsing config for function: %v", err)
 	}
 	labels, err := sdk.Map[string](m["labels"])
 	if err != nil {
-		return Config{}, nil
+		return Config{}, fmt.Errorf("error parsing config for function: %v", err)
 	}
 
 	return Config{

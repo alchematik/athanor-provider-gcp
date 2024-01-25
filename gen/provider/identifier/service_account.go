@@ -4,6 +4,8 @@
 package identifier
 
 import (
+	"fmt"
+
 	sdk "github.com/alchematik/athanor-go/sdk/provider/value"
 )
 
@@ -30,16 +32,16 @@ func ParseServiceAccountIdentifier(v sdk.Identifier) (ServiceAccountIdentifier, 
 
 	m, err := sdk.Map[any](v.Value)
 	if err != nil {
-		return ServiceAccountIdentifier{}, nil
+		return ServiceAccountIdentifier{}, fmt.Errorf("error parsing service_account_identifier: %v", err)
 	}
 
 	account_id, err := sdk.String(m["account_id"])
 	if err != nil {
-		return ServiceAccountIdentifier{}, nil
+		return ServiceAccountIdentifier{}, fmt.Errorf("error parsing service_account_identifier: %v", err)
 	}
 	project, err := sdk.String(m["project"])
 	if err != nil {
-		return ServiceAccountIdentifier{}, nil
+		return ServiceAccountIdentifier{}, fmt.Errorf("error parsing service_account_identifier: %v", err)
 	}
 
 	return ServiceAccountIdentifier{

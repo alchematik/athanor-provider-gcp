@@ -7,8 +7,9 @@ import (
 var apiConfig = schema.ResourceSchema{
 	Type: "api_config",
 	Identifier: schema.Struct("identifier", map[string]schema.FieldSchema{
-		"api":           schema.Identifier(),
-		"api_config_id": schema.String(),
+		"api":             schema.Identifier(),
+		"service_account": schema.Identifier(),
+		"api_config_id":   schema.String(),
 	}),
 	Config: schema.Struct("config", map[string]schema.FieldSchema{
 		"display_name":       schema.String(),

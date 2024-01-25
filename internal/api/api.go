@@ -39,9 +39,6 @@ type client struct {
 }
 
 type GCP interface {
-	// CreateApiConfig(ctx context.Context, req *apigatewaypb.CreateApiConfigRequest, opts ...gax.CallOption) (*apigateway.CreateApiConfigOperation, error)
-	// DeleteApiConfig(ctx context.Context, req *apigatewaypb.DeleteApiConfigRequest, opts ...gax.CallOption) (*apigateway.DeleteApiConfigOperation, error)
-	// GetApiConfig(ctx context.Context, req *apigatewaypb.GetApiConfigRequest, opts ...gax.CallOption) (*apigatewaypb.ApiConfig, error)
 	// CreateGateway(ctx context.Context, req *apigatewaypb.CreateGatewayRequest, opts ...gax.CallOption) (*apigateway.CreateGatewayOperation, error)
 	// DeleteGateway(ctx context.Context, req *apigatewaypb.DeleteGatewayRequest, opts ...gax.CallOption) (*apigateway.DeleteGatewayOperation, error)
 	// GetGateway(ctx context.Context, req *apigatewaypb.GetGatewayRequest, opts ...gax.CallOption) (*apigatewaypb.Gateway, error)
@@ -81,6 +78,11 @@ func (c *client) CreateApi(ctx context.Context, id identifier.ApiIdentifier, con
 	// TODO: make idempotent by getting active operation if exists.
 	op, err := c.GCP.CreateApi(ctx, &apigatewaypb.CreateApiRequest{
 		Parent: fmt.Sprintf("projects/%s/locations/global", id.Project),
+		ApiId:  id.ApiId,
+		Api: &apigatewaypb.Api{
+			Labels:      config.Labels,
+			DisplayName: config.DisplayName,
+		},
 	})
 	if err != nil {
 		return api.Api{}, err

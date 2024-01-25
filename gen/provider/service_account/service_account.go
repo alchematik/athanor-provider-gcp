@@ -156,16 +156,16 @@ func ParseAttrs(v any) (Attrs, error) {
 
 	m, err := sdk.Map[any](v)
 	if err != nil {
-		return Attrs{}, nil
+		return Attrs{}, fmt.Errorf("error parsing attrs: %v", err)
 	}
 
 	disabled, err := sdk.Bool(m["disabled"])
 	if err != nil {
-		return Attrs{}, nil
+		return Attrs{}, fmt.Errorf("error parsing attrs for service_account: %v", err)
 	}
 	unique_id, err := sdk.String(m["unique_id"])
 	if err != nil {
-		return Attrs{}, nil
+		return Attrs{}, fmt.Errorf("error parsing attrs for service_account: %v", err)
 	}
 
 	return Attrs{
@@ -190,16 +190,16 @@ func ParseConfig(v any) (Config, error) {
 
 	m, err := sdk.Map[any](v)
 	if err != nil {
-		return Config{}, nil
+		return Config{}, fmt.Errorf("error parsing config: %v", err)
 	}
 
 	description, err := sdk.String(m["description"])
 	if err != nil {
-		return Config{}, nil
+		return Config{}, fmt.Errorf("error parsing config for service_account: %v", err)
 	}
 	display_name, err := sdk.String(m["display_name"])
 	if err != nil {
-		return Config{}, nil
+		return Config{}, fmt.Errorf("error parsing config for service_account: %v", err)
 	}
 
 	return Config{

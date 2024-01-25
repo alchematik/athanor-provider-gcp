@@ -20,9 +20,10 @@ func (x Config) ToExpr() any {
 }
 
 type Identifier struct {
-	Alias       string
-	Api         any
-	ApiConfigId any
+	Alias          string
+	Api            any
+	ApiConfigId    any
+	ServiceAccount any
 }
 
 func (x Identifier) ToExpr() any {
@@ -30,8 +31,9 @@ func (x Identifier) ToExpr() any {
 		ResourceType: "api_config",
 		Alias:        x.Alias,
 		Value: map[string]any{
-			"api":           x.Api,
-			"api_config_id": x.ApiConfigId,
+			"api":             x.Api,
+			"api_config_id":   x.ApiConfigId,
+			"service_account": x.ServiceAccount,
 		},
 	}
 }

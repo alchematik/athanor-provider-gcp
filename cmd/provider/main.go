@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/alchematik/athanor-provider-gcp/internal/api"
+	"github.com/alchematik/athanor-provider-gcp/internal/api_config"
 	"github.com/alchematik/athanor-provider-gcp/internal/bucket"
 	"github.com/alchematik/athanor-provider-gcp/internal/bucket_object"
 	"github.com/alchematik/athanor-provider-gcp/internal/function"
@@ -15,6 +16,9 @@ func main() {
 	plugin.Serve(map[string]plugin.ResoureceHandlerInitializer{
 		"api": func(ctx context.Context) (plugin.ResourceHandler, error) {
 			return api.NewHandler(ctx)
+		},
+		"api_config": func(ctx context.Context) (plugin.ResourceHandler, error) {
+			return api_config.NewHandler(ctx)
 		},
 		"bucket": func(ctx context.Context) (plugin.ResourceHandler, error) {
 			return bucket.NewHandler(ctx)

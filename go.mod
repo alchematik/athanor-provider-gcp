@@ -7,6 +7,7 @@ require (
 	cloud.google.com/go/iam v1.1.3
 	cloud.google.com/go/storage v1.36.0
 	github.com/alchematik/athanor-go v0.0.0-20240113021430-408d7b7731fa
+	github.com/googleapis/gax-go/v2 v2.12.0
 	google.golang.org/grpc v1.60.1
 	google.golang.org/protobuf v1.32.0
 )
@@ -24,7 +25,6 @@ require (
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/google/uuid v1.4.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
-	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
 	github.com/hashicorp/go-hclog v0.14.1 // indirect
 	github.com/hashicorp/go-plugin v1.6.0 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect

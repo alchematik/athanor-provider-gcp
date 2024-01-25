@@ -3,6 +3,7 @@ module github.com/alchematik/athanor-provider-gcp
 go 1.21.5
 
 require (
+	cloud.google.com/go/apigateway v1.6.2
 	cloud.google.com/go/functions v1.15.2
 	cloud.google.com/go/iam v1.1.3
 	cloud.google.com/go/storage v1.36.0

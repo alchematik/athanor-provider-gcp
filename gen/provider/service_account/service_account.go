@@ -51,9 +51,11 @@ type ServiceAccountHandler struct {
 	ServiceAccountCreator ServiceAccountCreator
 	ServiceAccountUpdator ServiceAccountUpdator
 	ServiceAccountDeleter ServiceAccountDeleter
+
+	CloseFunc func() error
 }
 
-func (h ServiceAccountHandler) GetResource(ctx context.Context, id sdk.Identifier) (sdk.Resource, error) {
+func (h *ServiceAccountHandler) GetResource(ctx context.Context, id sdk.Identifier) (sdk.Resource, error) {
 	if h.ServiceAccountGetter == nil {
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
@@ -71,7 +73,7 @@ func (h ServiceAccountHandler) GetResource(ctx context.Context, id sdk.Identifie
 	return r.ToResourceValue()
 }
 
-func (h ServiceAccountHandler) CreateResource(ctx context.Context, id sdk.Identifier, config any) (sdk.Resource, error) {
+func (h *ServiceAccountHandler) CreateResource(ctx context.Context, id sdk.Identifier, config any) (sdk.Resource, error) {
 	if h.ServiceAccountCreator == nil {
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
@@ -94,7 +96,7 @@ func (h ServiceAccountHandler) CreateResource(ctx context.Context, id sdk.Identi
 	return r.ToResourceValue()
 }
 
-func (h ServiceAccountHandler) UpdateResource(ctx context.Context, id sdk.Identifier, config any, mask []sdk.UpdateMaskField) (sdk.Resource, error) {
+func (h *ServiceAccountHandler) UpdateResource(ctx context.Context, id sdk.Identifier, config any, mask []sdk.UpdateMaskField) (sdk.Resource, error) {
 	if h.ServiceAccountUpdator == nil {
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
@@ -117,7 +119,7 @@ func (h ServiceAccountHandler) UpdateResource(ctx context.Context, id sdk.Identi
 	return r.ToResourceValue()
 }
 
-func (h ServiceAccountHandler) DeleteResource(ctx context.Context, id sdk.Identifier) error {
+func (h *ServiceAccountHandler) DeleteResource(ctx context.Context, id sdk.Identifier) error {
 	if h.ServiceAccountDeleter == nil {
 		return fmt.Errorf("unimplemented")
 	}
@@ -128,6 +130,14 @@ func (h ServiceAccountHandler) DeleteResource(ctx context.Context, id sdk.Identi
 	}
 
 	return h.ServiceAccountDeleter.DeleteServiceAccount(ctx, idVal)
+}
+
+func (h *ServiceAccountHandler) Close() error {
+	if h.CloseFunc != nil {
+		return h.CloseFunc()
+	}
+
+	return nil
 }
 
 type Attrs struct {

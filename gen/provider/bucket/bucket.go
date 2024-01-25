@@ -51,9 +51,11 @@ type BucketHandler struct {
 	BucketCreator BucketCreator
 	BucketUpdator BucketUpdator
 	BucketDeleter BucketDeleter
+
+	CloseFunc func() error
 }
 
-func (h BucketHandler) GetResource(ctx context.Context, id sdk.Identifier) (sdk.Resource, error) {
+func (h *BucketHandler) GetResource(ctx context.Context, id sdk.Identifier) (sdk.Resource, error) {
 	if h.BucketGetter == nil {
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
@@ -71,7 +73,7 @@ func (h BucketHandler) GetResource(ctx context.Context, id sdk.Identifier) (sdk.
 	return r.ToResourceValue()
 }
 
-func (h BucketHandler) CreateResource(ctx context.Context, id sdk.Identifier, config any) (sdk.Resource, error) {
+func (h *BucketHandler) CreateResource(ctx context.Context, id sdk.Identifier, config any) (sdk.Resource, error) {
 	if h.BucketCreator == nil {
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
@@ -94,7 +96,7 @@ func (h BucketHandler) CreateResource(ctx context.Context, id sdk.Identifier, co
 	return r.ToResourceValue()
 }
 
-func (h BucketHandler) UpdateResource(ctx context.Context, id sdk.Identifier, config any, mask []sdk.UpdateMaskField) (sdk.Resource, error) {
+func (h *BucketHandler) UpdateResource(ctx context.Context, id sdk.Identifier, config any, mask []sdk.UpdateMaskField) (sdk.Resource, error) {
 	if h.BucketUpdator == nil {
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
@@ -117,7 +119,7 @@ func (h BucketHandler) UpdateResource(ctx context.Context, id sdk.Identifier, co
 	return r.ToResourceValue()
 }
 
-func (h BucketHandler) DeleteResource(ctx context.Context, id sdk.Identifier) error {
+func (h *BucketHandler) DeleteResource(ctx context.Context, id sdk.Identifier) error {
 	if h.BucketDeleter == nil {
 		return fmt.Errorf("unimplemented")
 	}
@@ -128,6 +130,14 @@ func (h BucketHandler) DeleteResource(ctx context.Context, id sdk.Identifier) er
 	}
 
 	return h.BucketDeleter.DeleteBucket(ctx, idVal)
+}
+
+func (h *BucketHandler) Close() error {
+	if h.CloseFunc != nil {
+		return h.CloseFunc()
+	}
+
+	return nil
 }
 
 type Attrs struct {

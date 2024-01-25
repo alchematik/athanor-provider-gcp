@@ -51,9 +51,11 @@ type ApiHandler struct {
 	ApiCreator ApiCreator
 	ApiUpdator ApiUpdator
 	ApiDeleter ApiDeleter
+
+	CloseFunc func() error
 }
 
-func (h ApiHandler) GetResource(ctx context.Context, id sdk.Identifier) (sdk.Resource, error) {
+func (h *ApiHandler) GetResource(ctx context.Context, id sdk.Identifier) (sdk.Resource, error) {
 	if h.ApiGetter == nil {
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
@@ -71,7 +73,7 @@ func (h ApiHandler) GetResource(ctx context.Context, id sdk.Identifier) (sdk.Res
 	return r.ToResourceValue()
 }
 
-func (h ApiHandler) CreateResource(ctx context.Context, id sdk.Identifier, config any) (sdk.Resource, error) {
+func (h *ApiHandler) CreateResource(ctx context.Context, id sdk.Identifier, config any) (sdk.Resource, error) {
 	if h.ApiCreator == nil {
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
@@ -94,7 +96,7 @@ func (h ApiHandler) CreateResource(ctx context.Context, id sdk.Identifier, confi
 	return r.ToResourceValue()
 }
 
-func (h ApiHandler) UpdateResource(ctx context.Context, id sdk.Identifier, config any, mask []sdk.UpdateMaskField) (sdk.Resource, error) {
+func (h *ApiHandler) UpdateResource(ctx context.Context, id sdk.Identifier, config any, mask []sdk.UpdateMaskField) (sdk.Resource, error) {
 	if h.ApiUpdator == nil {
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
@@ -117,7 +119,7 @@ func (h ApiHandler) UpdateResource(ctx context.Context, id sdk.Identifier, confi
 	return r.ToResourceValue()
 }
 
-func (h ApiHandler) DeleteResource(ctx context.Context, id sdk.Identifier) error {
+func (h *ApiHandler) DeleteResource(ctx context.Context, id sdk.Identifier) error {
 	if h.ApiDeleter == nil {
 		return fmt.Errorf("unimplemented")
 	}
@@ -128,6 +130,14 @@ func (h ApiHandler) DeleteResource(ctx context.Context, id sdk.Identifier) error
 	}
 
 	return h.ApiDeleter.DeleteApi(ctx, idVal)
+}
+
+func (h *ApiHandler) Close() error {
+	if h.CloseFunc != nil {
+		return h.CloseFunc()
+	}
+
+	return nil
 }
 
 type Attrs struct {

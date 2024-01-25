@@ -11,29 +11,41 @@ import (
 	"cloud.google.com/go/iam/admin/apiv1/adminpb"
 	sdkerrors "github.com/alchematik/athanor-go/sdk/errors"
 	"github.com/alchematik/athanor-go/sdk/provider/value"
+	gax "github.com/googleapis/gax-go/v2"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func NewHandler() serviceaccount.ServiceAccountHandler {
-	c := &client{}
-	return serviceaccount.ServiceAccountHandler{
+func NewHandler(ctx context.Context) (*serviceaccount.ServiceAccountHandler, error) {
+	gcp, err := iamadmin.NewIamClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+	c := &client{
+		GCP: gcp,
+	}
+	return &serviceaccount.ServiceAccountHandler{
 		ServiceAccountGetter:  c,
 		ServiceAccountCreator: c,
 		ServiceAccountUpdator: c,
 		ServiceAccountDeleter: c,
-	}
+		CloseFunc:             gcp.Close,
+	}, nil
 }
 
-type client struct{}
+type client struct {
+	GCP GCP
+}
+
+type GCP interface {
+	GetServiceAccount(context.Context, *adminpb.GetServiceAccountRequest, ...gax.CallOption) (*adminpb.ServiceAccount, error)
+	CreateServiceAccount(context.Context, *adminpb.CreateServiceAccountRequest, ...gax.CallOption) (*adminpb.ServiceAccount, error)
+	UpdateServiceAccount(context.Context, *adminpb.ServiceAccount, ...gax.CallOption) (*adminpb.ServiceAccount, error)
+	DeleteServiceAccount(context.Context, *adminpb.DeleteServiceAccountRequest, ...gax.CallOption) error
+}
 
 func (c *client) GetServiceAccount(ctx context.Context, id identifier.ServiceAccountIdentifier) (serviceaccount.ServiceAccount, error) {
-	iamClient, err := iamadmin.NewIamClient(ctx)
-	if err != nil {
-		return serviceaccount.ServiceAccount{}, err
-	}
-
-	req, err := iamClient.GetServiceAccount(ctx, &adminpb.GetServiceAccountRequest{
+	req, err := c.GCP.GetServiceAccount(ctx, &adminpb.GetServiceAccountRequest{
 		Name: fmt.Sprintf("projects/%s/serviceAccounts/%s@%s.iam.gserviceaccount.com", id.Project, id.AccountId, id.Project),
 	})
 	if err != nil {
@@ -58,12 +70,7 @@ func (c *client) GetServiceAccount(ctx context.Context, id identifier.ServiceAcc
 }
 
 func (c *client) CreateServiceAccount(ctx context.Context, id identifier.ServiceAccountIdentifier, config serviceaccount.Config) (serviceaccount.ServiceAccount, error) {
-	iamClient, err := iamadmin.NewIamClient(ctx)
-	if err != nil {
-		return serviceaccount.ServiceAccount{}, err
-	}
-
-	res, err := iamClient.CreateServiceAccount(ctx, &adminpb.CreateServiceAccountRequest{
+	res, err := c.GCP.CreateServiceAccount(ctx, &adminpb.CreateServiceAccountRequest{
 		Name:      fmt.Sprintf("projects/%s", id.Project),
 		AccountId: id.AccountId,
 		ServiceAccount: &adminpb.ServiceAccount{
@@ -89,12 +96,7 @@ func (c *client) CreateServiceAccount(ctx context.Context, id identifier.Service
 }
 
 func (c *client) UpdateServiceAccount(ctx context.Context, id identifier.ServiceAccountIdentifier, config serviceaccount.Config, mask []value.UpdateMaskField) (serviceaccount.ServiceAccount, error) {
-	iamClient, err := iamadmin.NewIamClient(ctx)
-	if err != nil {
-		return serviceaccount.ServiceAccount{}, err
-	}
-
-	res, err := iamClient.UpdateServiceAccount(ctx, &adminpb.ServiceAccount{
+	res, err := c.GCP.UpdateServiceAccount(ctx, &adminpb.ServiceAccount{
 		Name:        fmt.Sprintf("projects/%s/serviceAccounts/%s@%s.iam.gserviceaccount.com", id.Project, id.AccountId, id.Project),
 		DisplayName: config.DisplayName,
 		Description: config.Description,
@@ -117,12 +119,7 @@ func (c *client) UpdateServiceAccount(ctx context.Context, id identifier.Service
 }
 
 func (c *client) DeleteServiceAccount(ctx context.Context, id identifier.ServiceAccountIdentifier) error {
-	iamClient, err := iamadmin.NewIamClient(ctx)
-	if err != nil {
-		return err
-	}
-
-	return iamClient.DeleteServiceAccount(ctx, &adminpb.DeleteServiceAccountRequest{
+	return c.GCP.DeleteServiceAccount(ctx, &adminpb.DeleteServiceAccountRequest{
 		Name: fmt.Sprintf("projects/%s/serviceAccounts/%s@%s.iam.gserviceaccount.com", id.Project, id.AccountId, id.Project),
 	})
 }

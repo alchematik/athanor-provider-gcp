@@ -51,9 +51,11 @@ type ApiConfigHandler struct {
 	ApiConfigCreator ApiConfigCreator
 	ApiConfigUpdator ApiConfigUpdator
 	ApiConfigDeleter ApiConfigDeleter
+
+	CloseFunc func() error
 }
 
-func (h ApiConfigHandler) GetResource(ctx context.Context, id sdk.Identifier) (sdk.Resource, error) {
+func (h *ApiConfigHandler) GetResource(ctx context.Context, id sdk.Identifier) (sdk.Resource, error) {
 	if h.ApiConfigGetter == nil {
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
@@ -71,7 +73,7 @@ func (h ApiConfigHandler) GetResource(ctx context.Context, id sdk.Identifier) (s
 	return r.ToResourceValue()
 }
 
-func (h ApiConfigHandler) CreateResource(ctx context.Context, id sdk.Identifier, config any) (sdk.Resource, error) {
+func (h *ApiConfigHandler) CreateResource(ctx context.Context, id sdk.Identifier, config any) (sdk.Resource, error) {
 	if h.ApiConfigCreator == nil {
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
@@ -94,7 +96,7 @@ func (h ApiConfigHandler) CreateResource(ctx context.Context, id sdk.Identifier,
 	return r.ToResourceValue()
 }
 
-func (h ApiConfigHandler) UpdateResource(ctx context.Context, id sdk.Identifier, config any, mask []sdk.UpdateMaskField) (sdk.Resource, error) {
+func (h *ApiConfigHandler) UpdateResource(ctx context.Context, id sdk.Identifier, config any, mask []sdk.UpdateMaskField) (sdk.Resource, error) {
 	if h.ApiConfigUpdator == nil {
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
@@ -117,7 +119,7 @@ func (h ApiConfigHandler) UpdateResource(ctx context.Context, id sdk.Identifier,
 	return r.ToResourceValue()
 }
 
-func (h ApiConfigHandler) DeleteResource(ctx context.Context, id sdk.Identifier) error {
+func (h *ApiConfigHandler) DeleteResource(ctx context.Context, id sdk.Identifier) error {
 	if h.ApiConfigDeleter == nil {
 		return fmt.Errorf("unimplemented")
 	}
@@ -128,6 +130,14 @@ func (h ApiConfigHandler) DeleteResource(ctx context.Context, id sdk.Identifier)
 	}
 
 	return h.ApiConfigDeleter.DeleteApiConfig(ctx, idVal)
+}
+
+func (h *ApiConfigHandler) Close() error {
+	if h.CloseFunc != nil {
+		return h.CloseFunc()
+	}
+
+	return nil
 }
 
 type Attrs struct {

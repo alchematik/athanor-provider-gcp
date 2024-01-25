@@ -13,28 +13,34 @@ import (
 	value "github.com/alchematik/athanor-go/sdk/provider/value"
 )
 
-func NewHandler() bucket.BucketHandler {
-	c := &client{}
-	return bucket.BucketHandler{
+func NewHandler(ctx context.Context) (*bucket.BucketHandler, error) {
+	gcp, err := storage.NewClient(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error creating GCP storage client: %v", err)
+	}
+
+	c := &client{
+		Storage: gcp,
+	}
+	return &bucket.BucketHandler{
 		BucketGetter:  c,
 		BucketCreator: c,
 		BucketUpdator: c,
 		BucketDeleter: c,
-	}
+		CloseFunc:     gcp.Close,
+	}, nil
 }
 
 type client struct {
+	Storage Storage
+}
+
+type Storage interface {
+	Bucket(string) *storage.BucketHandle
 }
 
 func (c *client) GetBucket(ctx context.Context, id identifier.BucketIdentifier) (bucket.Bucket, error) {
-	gcp, err := storage.NewClient(ctx)
-	if err != nil {
-		return bucket.Bucket{}, fmt.Errorf("error creating storage client: %v", err)
-	}
-
-	defer gcp.Close()
-
-	b := gcp.Bucket(id.Name)
+	b := c.Storage.Bucket(id.Name)
 
 	attrs, err := b.Attrs(ctx)
 	if err != nil {
@@ -57,14 +63,7 @@ func (c *client) GetBucket(ctx context.Context, id identifier.BucketIdentifier) 
 }
 
 func (c *client) CreateBucket(ctx context.Context, id identifier.BucketIdentifier, config bucket.Config) (bucket.Bucket, error) {
-	gcp, err := storage.NewClient(ctx)
-	if err != nil {
-		return bucket.Bucket{}, err
-	}
-
-	defer gcp.Close()
-
-	b := gcp.Bucket(id.Name)
+	b := c.Storage.Bucket(id.Name)
 	if err := b.Create(ctx, id.Project, &storage.BucketAttrs{
 		Labels:   config.Labels,
 		Location: id.Location,
@@ -89,13 +88,6 @@ func (c *client) CreateBucket(ctx context.Context, id identifier.BucketIdentifie
 }
 
 func (c *client) UpdateBucket(ctx context.Context, id identifier.BucketIdentifier, config bucket.Config, mask []value.UpdateMaskField) (bucket.Bucket, error) {
-	gcp, err := storage.NewClient(ctx)
-	if err != nil {
-		return bucket.Bucket{}, err
-	}
-
-	defer gcp.Close()
-
 	toUpdate := storage.BucketAttrsToUpdate{}
 	for _, m := range mask {
 		switch m.Name {
@@ -115,7 +107,7 @@ func (c *client) UpdateBucket(ctx context.Context, id identifier.BucketIdentifie
 		}
 	}
 
-	b := gcp.Bucket(string(id.Name))
+	b := c.Storage.Bucket(string(id.Name))
 	attrs, err := b.Update(ctx, toUpdate)
 	if err != nil {
 		return bucket.Bucket{}, err
@@ -133,11 +125,6 @@ func (c *client) UpdateBucket(ctx context.Context, id identifier.BucketIdentifie
 }
 
 func (c *client) DeleteBucket(ctx context.Context, id identifier.BucketIdentifier) error {
-	gcp, err := storage.NewClient(ctx)
-	if err != nil {
-		return err
-	}
-
-	b := gcp.Bucket(id.Name)
+	b := c.Storage.Bucket(id.Name)
 	return b.Delete(ctx)
 }

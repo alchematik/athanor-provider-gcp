@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"os"
 
 	"github.com/alchematik/athanor-provider-gcp/gen/provider/function"
@@ -15,34 +14,64 @@ import (
 	"cloud.google.com/go/storage"
 	sdkerrors "github.com/alchematik/athanor-go/sdk/errors"
 	"github.com/alchematik/athanor-go/sdk/provider/value"
+	gax "github.com/googleapis/gax-go/v2"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	fieldmaskpb "google.golang.org/protobuf/types/known/fieldmaskpb"
 )
 
-func NewHandler() function.FunctionHandler {
-	c := &client{}
-	return function.FunctionHandler{
+func NewHandler(ctx context.Context) (*function.FunctionHandler, error) {
+	gcp, err := cloudfunction.NewFunctionClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	storageClient, err := storage.NewClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	c := &client{
+		GCP:     gcp,
+		Storage: storageClient,
+	}
+	return &function.FunctionHandler{
 		FunctionGetter:  c,
 		FunctionCreator: c,
 		FunctionUpdator: c,
 		FunctionDeleter: c,
-	}
+		CloseFunc: func() error {
+			if err := gcp.Close(); err != nil {
+				return err
+			}
+
+			return storageClient.Close()
+		},
+	}, nil
 }
 
 type client struct {
+	GCP     GCP
+	Storage Storage
+}
+
+type GCP interface {
+	GetFunction(context.Context, *functionspb.GetFunctionRequest, ...gax.CallOption) (*functionspb.Function, error)
+	GenerateUploadUrl(context.Context, *functionspb.GenerateUploadUrlRequest, ...gax.CallOption) (*functionspb.GenerateUploadUrlResponse, error)
+	CreateFunction(context.Context, *functionspb.CreateFunctionRequest, ...gax.CallOption) (*cloudfunction.CreateFunctionOperation, error)
+	UpdateFunction(context.Context, *functionspb.UpdateFunctionRequest, ...gax.CallOption) (*cloudfunction.UpdateFunctionOperation, error)
+	DeleteFunction(context.Context, *functionspb.DeleteFunctionRequest, ...gax.CallOption) (*cloudfunction.DeleteFunctionOperation, error)
+}
+
+type Storage interface {
+	Bucket(string) *storage.BucketHandle
 }
 
 func (c *client) GetFunction(ctx context.Context, id identifier.FunctionIdentifier) (function.Function, error) {
-	gcp, err := cloudfunction.NewFunctionClient(ctx)
-	if err != nil {
-		return function.Function{}, err
-	}
-
 	req := &functionspb.GetFunctionRequest{
 		Name: fmt.Sprintf("projects/%s/locations/%s/functions/%s", id.Project, id.Location, id.Name),
 	}
-	res, err := gcp.GetFunction(ctx, req)
+	res, err := c.GCP.GetFunction(ctx, req)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
 			return function.Function{}, sdkerrors.NewErrorNotFound()
@@ -55,14 +84,7 @@ func (c *client) GetFunction(ctx context.Context, id identifier.FunctionIdentifi
 	bucketName := storageSource.GetBucket()
 	objectName := storageSource.GetObject()
 
-	log.Printf("FUNCTION BUCKET AND OBJECT >>>>>>>>>>>>>>> %v, %v", bucketName, objectName)
-
-	storageClient, err := storage.NewClient(ctx)
-	if err != nil {
-		return function.Function{}, err
-	}
-
-	objectAttrs, err := storageClient.Bucket(bucketName).Object(objectName).Attrs(ctx)
+	objectAttrs, err := c.Storage.Bucket(bucketName).Object(objectName).Attrs(ctx)
 	if err != nil {
 		return function.Function{}, err
 	}
@@ -87,26 +109,16 @@ func (c *client) GetFunction(ctx context.Context, id identifier.FunctionIdentifi
 }
 
 func (c *client) CreateFunction(ctx context.Context, id identifier.FunctionIdentifier, config function.Config) (function.Function, error) {
-	gcp, err := cloudfunction.NewFunctionClient(ctx)
-	if err != nil {
-		return function.Function{}, err
-	}
-
 	// TODO: Make idempotent by checking if there's an exising create operation.
 
-	uploadURLRes, err := gcp.GenerateUploadUrl(ctx, &functionspb.GenerateUploadUrlRequest{
+	uploadURLRes, err := c.GCP.GenerateUploadUrl(ctx, &functionspb.GenerateUploadUrlRequest{
 		Parent: fmt.Sprintf("projects/%s/locations/%s", id.Project, id.Location),
 	})
 	if err != nil {
 		return function.Function{}, err
 	}
 
-	storageClient, err := storage.NewClient(ctx)
-	if err != nil {
-		return function.Function{}, err
-	}
-
-	objHandle := storageClient.Bucket(uploadURLRes.GetStorageSource().GetBucket()).Object(uploadURLRes.GetStorageSource().GetObject())
+	objHandle := c.Storage.Bucket(uploadURLRes.GetStorageSource().GetBucket()).Object(uploadURLRes.GetStorageSource().GetObject())
 	writer := objHandle.NewWriter(ctx)
 	file, err := os.Open(config.BuildConfig.Source.Path)
 	if err != nil {
@@ -119,8 +131,7 @@ func (c *client) CreateFunction(ctx context.Context, id identifier.FunctionIdent
 		return function.Function{}, err
 	}
 
-	// TODO: create the function.
-	operation, err := gcp.CreateFunction(ctx, &functionspb.CreateFunctionRequest{
+	operation, err := c.GCP.CreateFunction(ctx, &functionspb.CreateFunctionRequest{
 		Parent:     fmt.Sprintf("projects/%s/locations/%s", id.Project, id.Location),
 		FunctionId: id.Name,
 		Function: &functionspb.Function{
@@ -143,15 +154,13 @@ func (c *client) CreateFunction(ctx context.Context, id identifier.FunctionIdent
 		return function.Function{}, err
 	}
 
-	log.Printf("FUNCTION CREATE OPERATION >>>>>>>>> %v\n", operation.Name())
-
 	res, err := operation.Wait(ctx)
 	if err != nil {
 		return function.Function{}, err
 	}
 
 	endStorage := res.GetBuildConfig().GetSource().GetStorageSource()
-	objectAttrs, err := storageClient.Bucket(endStorage.GetBucket()).Object(endStorage.GetObject()).Attrs(ctx)
+	objectAttrs, err := c.Storage.Bucket(endStorage.GetBucket()).Object(endStorage.GetObject()).Attrs(ctx)
 	if err != nil {
 		return function.Function{}, err
 	}
@@ -176,15 +185,6 @@ func (c *client) CreateFunction(ctx context.Context, id identifier.FunctionIdent
 }
 
 func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdentifier, config function.Config, mask []value.UpdateMaskField) (function.Function, error) {
-	gcp, err := cloudfunction.NewFunctionClient(ctx)
-	if err != nil {
-		return function.Function{}, err
-	}
-
-	storageClient, err := storage.NewClient(ctx)
-	if err != nil {
-		return function.Function{}, err
-	}
 
 	// TODO: Make idempotent by checking if there's an exising update operation.
 
@@ -212,14 +212,14 @@ func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdent
 					bc.EntryPoint = config.BuildConfig.Entrypoint
 					updateMask.Paths = append(updateMask.Paths, "build_config.entrypoint")
 				case "source":
-					uploadURLRes, err := gcp.GenerateUploadUrl(ctx, &functionspb.GenerateUploadUrlRequest{
+					uploadURLRes, err := c.GCP.GenerateUploadUrl(ctx, &functionspb.GenerateUploadUrlRequest{
 						Parent: fmt.Sprintf("projects/%s/locations/%s", id.Project, id.Location),
 					})
 					if err != nil {
 						return function.Function{}, err
 					}
 
-					objHandle := storageClient.Bucket(uploadURLRes.GetStorageSource().GetBucket()).Object(uploadURLRes.GetStorageSource().GetObject())
+					objHandle := c.Storage.Bucket(uploadURLRes.GetStorageSource().GetBucket()).Object(uploadURLRes.GetStorageSource().GetObject())
 					writer := objHandle.NewWriter(ctx)
 					file, err := os.Open(config.BuildConfig.Source.Path)
 					if err != nil {
@@ -244,7 +244,7 @@ func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdent
 		}
 	}
 
-	operation, err := gcp.UpdateFunction(ctx, &functionspb.UpdateFunctionRequest{
+	operation, err := c.GCP.UpdateFunction(ctx, &functionspb.UpdateFunctionRequest{
 		Function:   updateFunc,
 		UpdateMask: &updateMask,
 	})
@@ -258,7 +258,7 @@ func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdent
 	}
 
 	endStorage := res.GetBuildConfig().GetSource().GetStorageSource()
-	objectAttrs, err := storageClient.Bucket(endStorage.GetBucket()).Object(endStorage.GetObject()).Attrs(ctx)
+	objectAttrs, err := c.Storage.Bucket(endStorage.GetBucket()).Object(endStorage.GetObject()).Attrs(ctx)
 	if err != nil {
 		return function.Function{}, err
 	}
@@ -283,12 +283,7 @@ func (c *client) UpdateFunction(ctx context.Context, id identifier.FunctionIdent
 }
 
 func (c *client) DeleteFunction(ctx context.Context, id identifier.FunctionIdentifier) error {
-	gcp, err := cloudfunction.NewFunctionClient(ctx)
-	if err != nil {
-		return err
-	}
-
-	operation, err := gcp.DeleteFunction(ctx, &functionspb.DeleteFunctionRequest{
+	operation, err := c.GCP.DeleteFunction(ctx, &functionspb.DeleteFunctionRequest{
 		Name: fmt.Sprintf("projects/%s/locations/%s/functions/%s", id.Project, id.Location, id.Name),
 	})
 	if err != nil {

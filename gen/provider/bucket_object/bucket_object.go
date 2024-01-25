@@ -51,9 +51,11 @@ type BucketObjectHandler struct {
 	BucketObjectCreator BucketObjectCreator
 	BucketObjectUpdator BucketObjectUpdator
 	BucketObjectDeleter BucketObjectDeleter
+
+	CloseFunc func() error
 }
 
-func (h BucketObjectHandler) GetResource(ctx context.Context, id sdk.Identifier) (sdk.Resource, error) {
+func (h *BucketObjectHandler) GetResource(ctx context.Context, id sdk.Identifier) (sdk.Resource, error) {
 	if h.BucketObjectGetter == nil {
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
@@ -71,7 +73,7 @@ func (h BucketObjectHandler) GetResource(ctx context.Context, id sdk.Identifier)
 	return r.ToResourceValue()
 }
 
-func (h BucketObjectHandler) CreateResource(ctx context.Context, id sdk.Identifier, config any) (sdk.Resource, error) {
+func (h *BucketObjectHandler) CreateResource(ctx context.Context, id sdk.Identifier, config any) (sdk.Resource, error) {
 	if h.BucketObjectCreator == nil {
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
@@ -94,7 +96,7 @@ func (h BucketObjectHandler) CreateResource(ctx context.Context, id sdk.Identifi
 	return r.ToResourceValue()
 }
 
-func (h BucketObjectHandler) UpdateResource(ctx context.Context, id sdk.Identifier, config any, mask []sdk.UpdateMaskField) (sdk.Resource, error) {
+func (h *BucketObjectHandler) UpdateResource(ctx context.Context, id sdk.Identifier, config any, mask []sdk.UpdateMaskField) (sdk.Resource, error) {
 	if h.BucketObjectUpdator == nil {
 		return sdk.Resource{}, fmt.Errorf("unimplemented")
 	}
@@ -117,7 +119,7 @@ func (h BucketObjectHandler) UpdateResource(ctx context.Context, id sdk.Identifi
 	return r.ToResourceValue()
 }
 
-func (h BucketObjectHandler) DeleteResource(ctx context.Context, id sdk.Identifier) error {
+func (h *BucketObjectHandler) DeleteResource(ctx context.Context, id sdk.Identifier) error {
 	if h.BucketObjectDeleter == nil {
 		return fmt.Errorf("unimplemented")
 	}
@@ -128,6 +130,14 @@ func (h BucketObjectHandler) DeleteResource(ctx context.Context, id sdk.Identifi
 	}
 
 	return h.BucketObjectDeleter.DeleteBucketObject(ctx, idVal)
+}
+
+func (h *BucketObjectHandler) Close() error {
+	if h.CloseFunc != nil {
+		return h.CloseFunc()
+	}
+
+	return nil
 }
 
 type Attrs struct {

@@ -13,7 +13,7 @@ var apiConfig = schema.ResourceSchema{
 	}),
 	Config: schema.Struct("config", map[string]schema.FieldSchema{
 		"display_name":       schema.String(),
-		"open_api_documents": schema.List(schema.File()),
+		"open_api_documents": schema.Immutable(schema.List(schema.File())),
 	}),
 	Attrs: schema.Struct("attrs", map[string]schema.FieldSchema{
 		"create": schema.String(),

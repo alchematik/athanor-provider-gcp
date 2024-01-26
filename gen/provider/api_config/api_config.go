@@ -155,7 +155,6 @@ func (x Attrs) ToValue() any {
 }
 
 func ParseAttrs(v any) (Attrs, error) {
-
 	m, err := sdk.Map[any](v)
 	if err != nil {
 		return Attrs{}, fmt.Errorf("error parsing attrs: %v", err)
@@ -189,12 +188,11 @@ type Config struct {
 func (x Config) ToValue() any {
 	return map[string]any{
 		"display_name":       sdk.ToType[any](x.DisplayName),
-		"open_api_documents": sdk.ToType[sdk.File](x.OpenApiDocuments),
+		"open_api_documents": sdk.ToImmutableType(sdk.ToType[sdk.File])(x.OpenApiDocuments),
 	}
 }
 
 func ParseConfig(v any) (Config, error) {
-
 	m, err := sdk.Map[any](v)
 	if err != nil {
 		return Config{}, fmt.Errorf("error parsing config: %v", err)

@@ -151,7 +151,6 @@ func (x Attrs) ToValue() any {
 }
 
 func ParseAttrs(v any) (Attrs, error) {
-
 	m, err := sdk.Map[any](v)
 	if err != nil {
 		return Attrs{}, fmt.Errorf("error parsing attrs: %v", err)
@@ -182,7 +181,6 @@ func (x BuildConfig) ToValue() any {
 }
 
 func ParseBuildConfig(v any) (BuildConfig, error) {
-
 	m, err := sdk.Map[any](v)
 	if err != nil {
 		return BuildConfig{}, fmt.Errorf("error parsing build_config: %v", err)
@@ -223,7 +221,6 @@ func (x Config) ToValue() any {
 }
 
 func ParseConfig(v any) (Config, error) {
-
 	m, err := sdk.Map[any](v)
 	if err != nil {
 		return Config{}, fmt.Errorf("error parsing config: %v", err)

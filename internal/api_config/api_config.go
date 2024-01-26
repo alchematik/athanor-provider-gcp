@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"hash/crc32"
-	"log"
 	"os"
 
 	apiconfig "github.com/alchematik/athanor-provider-gcp/gen/provider/api_config"
@@ -91,7 +90,6 @@ func (c *client) GetApiConfig(ctx context.Context, id identifier.ApiConfigIdenti
 }
 
 func (c *client) CreateApiConfig(ctx context.Context, id identifier.ApiConfigIdentifier, config apiconfig.Config) (apiconfig.ApiConfig, error) {
-	log.Printf(">>>>>>>>>>>>CREATING API CONFIG: docs (%d)", len(config.OpenApiDocuments))
 	apiID, ok := id.Api.(identifier.ApiIdentifier)
 	if !ok {
 		return apiconfig.ApiConfig{}, fmt.Errorf("field api must be an api identifier")
@@ -104,7 +102,6 @@ func (c *client) CreateApiConfig(ctx context.Context, id identifier.ApiConfigIde
 
 	docs := make([]*apigatewaypb.ApiConfig_OpenApiDocument, len(config.OpenApiDocuments))
 	for i, doc := range config.OpenApiDocuments {
-		log.Printf("READING API DOC: %v", doc.Path)
 		data, err := os.ReadFile(doc.Path)
 		if err != nil {
 			return apiconfig.ApiConfig{}, err
@@ -176,23 +173,6 @@ func (c *client) UpdateApiConfig(ctx context.Context, id identifier.ApiConfigIde
 		case "display_name":
 			apiConfig.DisplayName = config.DisplayName
 			updateMask.Paths = append(updateMask.Paths, "display_name")
-		case "open_api_documents":
-			docs := make([]*apigatewaypb.ApiConfig_OpenApiDocument, len(config.OpenApiDocuments))
-			for i, doc := range config.OpenApiDocuments {
-				data, err := os.ReadFile(doc.Path)
-				if err != nil {
-					return apiconfig.ApiConfig{}, err
-				}
-
-				docs[i] = &apigatewaypb.ApiConfig_OpenApiDocument{
-					Document: &apigatewaypb.ApiConfig_File{
-						Path:     doc.Path,
-						Contents: data,
-					},
-				}
-			}
-			apiConfig.OpenapiDocuments = docs
-			updateMask.Paths = append(updateMask.Paths, "openapi_documents")
 		}
 	}
 

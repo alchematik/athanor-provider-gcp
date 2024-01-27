@@ -183,12 +183,14 @@ func ParseAttrs(v any) (Attrs, error) {
 type Config struct {
 	DisplayName      string
 	OpenApiDocuments []sdk.File
+	ServiceAccount   sdk.ResourceIdentifier
 }
 
 func (x Config) ToValue() any {
 	return map[string]any{
 		"display_name":       sdk.ToType[any](x.DisplayName),
 		"open_api_documents": sdk.ToImmutableType(sdk.ToType[sdk.File])(x.OpenApiDocuments),
+		"service_account":    sdk.ToImmutableType(sdk.ToType[any])(x.ServiceAccount),
 	}
 }
 
@@ -206,9 +208,14 @@ func ParseConfig(v any) (Config, error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("error parsing config for api_config: %v", err)
 	}
+	service_account, err := identifier.ParseIdentifier(m["service_account"])
+	if err != nil {
+		return Config{}, fmt.Errorf("error parsing config for api_config: %v", err)
+	}
 
 	return Config{
 		DisplayName:      display_name,
 		OpenApiDocuments: open_api_documents,
+		ServiceAccount:   service_account,
 	}, nil
 }

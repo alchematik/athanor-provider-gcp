@@ -10,18 +10,16 @@ import (
 )
 
 type ApiConfigIdentifier struct {
-	Api            sdk.ResourceIdentifier
-	ApiConfigId    string
-	ServiceAccount sdk.ResourceIdentifier
+	Api         sdk.ResourceIdentifier
+	ApiConfigId string
 }
 
 func (x ApiConfigIdentifier) ToValue() sdk.Identifier {
 	return sdk.Identifier{
 		ResourceType: "api_config",
 		Value: map[string]any{
-			"api":             sdk.ToType[any](x.Api),
-			"api_config_id":   sdk.ToType[any](x.ApiConfigId),
-			"service_account": sdk.ToType[any](x.ServiceAccount),
+			"api":           sdk.ToType[any](x.Api),
+			"api_config_id": sdk.ToType[any](x.ApiConfigId),
 		},
 	}
 }
@@ -45,14 +43,9 @@ func ParseApiConfigIdentifier(v sdk.Identifier) (ApiConfigIdentifier, error) {
 	if err != nil {
 		return ApiConfigIdentifier{}, fmt.Errorf("error parsing api_config_identifier: %v", err)
 	}
-	service_account, err := ParseIdentifier(m["service_account"])
-	if err != nil {
-		return ApiConfigIdentifier{}, fmt.Errorf("error parsing api_config_identifier: %v", err)
-	}
 
 	return ApiConfigIdentifier{
-		Api:            api,
-		ApiConfigId:    api_config_id,
-		ServiceAccount: service_account,
+		Api:         api,
+		ApiConfigId: api_config_id,
 	}, nil
 }

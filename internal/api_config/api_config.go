@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"hash/crc32"
 	"os"
+	"strings"
 
 	apiconfig "github.com/alchematik/athanor-provider-gcp/gen/provider/api_config"
 	"github.com/alchematik/athanor-provider-gcp/gen/provider/identifier"
@@ -75,11 +76,23 @@ func (c *client) GetApiConfig(ctx context.Context, id identifier.ApiConfigIdenti
 		}
 	}
 
+	// Has the form of  projects/-/serviceAccounts/<id>@<project>.iam.gserviceaccount.com
+	acc := res.GetGatewayServiceAccount()
+	parts := strings.Split(acc, "/")
+	email := parts[len(parts)-1]
+	emailParts := strings.Split(email, "@")
+	accountID := emailParts[0]
+	projectID := strings.Split(emailParts[1], ".")[0]
+
 	return apiconfig.ApiConfig{
 		Identifier: id,
 		Config: apiconfig.Config{
 			DisplayName:      res.GetDisplayName(),
 			OpenApiDocuments: files,
+			ServiceAccount: identifier.ServiceAccountIdentifier{
+				AccountId: accountID,
+				Project:   projectID,
+			},
 		},
 		Attrs: apiconfig.Attrs{
 			Create: res.GetCreateTime().String(),
@@ -95,7 +108,7 @@ func (c *client) CreateApiConfig(ctx context.Context, id identifier.ApiConfigIde
 		return apiconfig.ApiConfig{}, fmt.Errorf("field api must be an api identifier")
 	}
 
-	serviceAccountID, ok := id.ServiceAccount.(identifier.ServiceAccountIdentifier)
+	serviceAccountID, ok := config.ServiceAccount.(identifier.ServiceAccountIdentifier)
 	if !ok {
 		return apiconfig.ApiConfig{}, fmt.Errorf("field service_account must be an api identifier")
 	}

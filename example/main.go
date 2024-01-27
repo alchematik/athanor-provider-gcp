@@ -127,13 +127,13 @@ func main() {
 	bp = bp.WithResource(apiResource)
 
 	apiConfigID := apiconfig.Identifier{
-		Alias:          "my-api-config",
-		Api:            apiID,
-		ApiConfigId:    "athanor-test-config",
-		ServiceAccount: serviceAccountID,
+		Alias:       "my-api-config",
+		Api:         apiID,
+		ApiConfigId: "athanor-test-config",
 	}
 	apiConfigConfig := apiconfig.Config{
-		DisplayName: "Athanor test API config!",
+		DisplayName:    "Athanor test API config!",
+		ServiceAccount: serviceAccountID,
 		OpenApiDocuments: []any{
 			athanor.File{
 				Path: "example/openapi.yml",

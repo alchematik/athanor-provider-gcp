@@ -10,20 +10,21 @@ import (
 type Config struct {
 	DisplayName      any
 	OpenApiDocuments any
+	ServiceAccount   any
 }
 
 func (x Config) ToExpr() any {
 	return map[string]any{
 		"display_name":       x.DisplayName,
 		"open_api_documents": x.OpenApiDocuments,
+		"service_account":    x.ServiceAccount,
 	}
 }
 
 type Identifier struct {
-	Alias          string
-	Api            any
-	ApiConfigId    any
-	ServiceAccount any
+	Alias       string
+	Api         any
+	ApiConfigId any
 }
 
 func (x Identifier) ToExpr() any {
@@ -31,9 +32,8 @@ func (x Identifier) ToExpr() any {
 		ResourceType: "api_config",
 		Alias:        x.Alias,
 		Value: map[string]any{
-			"api":             x.Api,
-			"api_config_id":   x.ApiConfigId,
-			"service_account": x.ServiceAccount,
+			"api":           x.Api,
+			"api_config_id": x.ApiConfigId,
 		},
 	}
 }

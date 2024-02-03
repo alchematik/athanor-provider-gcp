@@ -24,8 +24,9 @@ func main() {
 	}
 	bucketConfig := bucket.Config{
 		Labels: map[string]any{
-			"test": "hello_world",
-			"meow": "is_me",
+			"test":    "hello_world",
+			"meow":    "is_me",
+			"another": "hey",
 		},
 	}
 	myBucket := athanor.Resource{
@@ -58,6 +59,19 @@ func main() {
 	}
 
 	bp = bp.WithResource(bucketObject)
+
+	anotherBucketObject := athanor.Resource{
+		Exists:   true,
+		Provider: provider,
+		Identifier: bucketobject.Identifier{
+			Alias:  "my-other-bucket-object",
+			Bucket: bucketID,
+			Name:   "my-other-bucket-object",
+		},
+		Config: bucketObjectConfig,
+	}
+
+	bp = bp.WithResource(anotherBucketObject)
 
 	funcID := function.Identifier{
 		Alias:    "my-function",

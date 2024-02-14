@@ -39,9 +39,6 @@ type client struct {
 }
 
 type GCP interface {
-	// CreateGateway(ctx context.Context, req *apigatewaypb.CreateGatewayRequest, opts ...gax.CallOption) (*apigateway.CreateGatewayOperation, error)
-	// DeleteGateway(ctx context.Context, req *apigatewaypb.DeleteGatewayRequest, opts ...gax.CallOption) (*apigateway.DeleteGatewayOperation, error)
-	// GetGateway(ctx context.Context, req *apigatewaypb.GetGatewayRequest, opts ...gax.CallOption) (*apigatewaypb.Gateway, error)
 	CreateApi(ctx context.Context, req *apigatewaypb.CreateApiRequest, opts ...gax.CallOption) (*apigateway.CreateApiOperation, error)
 	DeleteApi(ctx context.Context, req *apigatewaypb.DeleteApiRequest, opts ...gax.CallOption) (*apigateway.DeleteApiOperation, error)
 	GetApi(ctx context.Context, req *apigatewaypb.GetApiRequest, opts ...gax.CallOption) (*apigatewaypb.Api, error)

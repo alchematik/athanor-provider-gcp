@@ -20,6 +20,8 @@ func ParseIdentifier(v any) (sdk.ResourceIdentifier, error) {
 		return ParseApiIdentifier(id)
 	case "api_config":
 		return ParseApiConfigIdentifier(id)
+	case "api_gateway":
+		return ParseApiGatewayIdentifier(id)
 	case "bucket":
 		return ParseBucketIdentifier(id)
 	case "bucket_object":

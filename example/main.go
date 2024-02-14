@@ -5,6 +5,7 @@ import (
 
 	"github.com/alchematik/athanor-provider-gcp/gen/sdk/go/api"
 	apiconfig "github.com/alchematik/athanor-provider-gcp/gen/sdk/go/api_config"
+	apigateway "github.com/alchematik/athanor-provider-gcp/gen/sdk/go/api_gateway"
 	"github.com/alchematik/athanor-provider-gcp/gen/sdk/go/bucket"
 	bucketobject "github.com/alchematik/athanor-provider-gcp/gen/sdk/go/bucket_object"
 	"github.com/alchematik/athanor-provider-gcp/gen/sdk/go/function"
@@ -27,6 +28,7 @@ func main() {
 			"test":    "hello_world",
 			"meow":    "is_me",
 			"another": "hey",
+			"foo":     "bar",
 		},
 	}
 	myBucket := athanor.Resource{
@@ -162,6 +164,27 @@ func main() {
 	}
 
 	bp = bp.WithResource(apiConfigResource)
+
+	apiGatewayID := apigateway.Identifier{
+		Alias:     "my-api-gateway",
+		Project:   "textapp-389501",
+		Location:  "us-east4",
+		GatewayId: "athanor-test-gateway",
+	}
+	apiGatewayConfig := apigateway.Config{
+		ApiConfig:   apiConfigID,
+		DisplayName: "Athanor test gateway!",
+		Labels: map[string]any{
+			"test": "yes",
+		},
+	}
+	apiGatewayResource := athanor.Resource{
+		Exists:     true,
+		Provider:   provider,
+		Identifier: apiGatewayID,
+		Config:     apiGatewayConfig,
+	}
+	bp = bp.WithResource(apiGatewayResource)
 
 	if err := athanor.Build(bp); err != nil {
 		log.Fatalf("error building blueprint: %v", err)

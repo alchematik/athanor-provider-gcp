@@ -17,6 +17,7 @@ func main() {
 			serviceAccount,
 			api,
 			apiConfig,
+			apiGateway,
 		},
 	}
 

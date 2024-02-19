@@ -180,6 +180,25 @@ func ParseAttrs(v any) (Attrs, error) {
 	}, nil
 }
 
+func ParseAttrsList(v any) ([]Attrs, error) {
+	list, ok := v.([]any)
+	if !ok {
+		return nil, fmt.Errorf("invalid type for list: %T", v)
+	}
+
+	var vals []Attrs
+	for _, val := range list {
+		p, err := ParseAttrs(val)
+		if err != nil {
+			return nil, err
+		}
+
+		vals = append(vals, p)
+	}
+
+	return vals, nil
+}
+
 type Config struct {
 	DisplayName string
 	Labels      map[string]string
@@ -211,4 +230,23 @@ func ParseConfig(v any) (Config, error) {
 		DisplayName: display_name,
 		Labels:      labels,
 	}, nil
+}
+
+func ParseConfigList(v any) ([]Config, error) {
+	list, ok := v.([]any)
+	if !ok {
+		return nil, fmt.Errorf("invalid type for list: %T", v)
+	}
+
+	var vals []Config
+	for _, val := range list {
+		p, err := ParseConfig(val)
+		if err != nil {
+			return nil, err
+		}
+
+		vals = append(vals, p)
+	}
+
+	return vals, nil
 }

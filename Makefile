@@ -20,9 +20,9 @@ blueprint/reconcile: install/athanor build/translator/go build/provider
 
 .PHONY: diff/show
 diff/show: install/athanor
-	athanor diff show ./example/config.json 
+	athanor diff show --debug ./example/config.json 
 
 .PHONY: diff/reconcile
 diff/reconcile: install/athanor
-	athanor diff reconcile ./example/config.json
+	athanor diff reconcile --debug ./example/config.json
 

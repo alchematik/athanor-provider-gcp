@@ -8,6 +8,9 @@ import (
 	"github.com/alchematik/athanor-provider-gcp/internal/bucket"
 	"github.com/alchematik/athanor-provider-gcp/internal/bucket_object"
 	"github.com/alchematik/athanor-provider-gcp/internal/function"
+	"github.com/alchematik/athanor-provider-gcp/internal/iam_policy"
+	"github.com/alchematik/athanor-provider-gcp/internal/iam_role"
+	"github.com/alchematik/athanor-provider-gcp/internal/iam_role_custom_project"
 	"github.com/alchematik/athanor-provider-gcp/internal/service_account"
 
 	"github.com/alchematik/athanor-go/sdk/provider/plugin"
@@ -35,6 +38,15 @@ func main() {
 		},
 		"service_account": func(ctx context.Context) (plugin.ResourceHandler, error) {
 			return service_account.NewHandler(ctx)
+		},
+		"iam_role": func(ctx context.Context) (plugin.ResourceHandler, error) {
+			return iam_role.NewHandler(ctx)
+		},
+		"iam_role_custom_project": func(ctx context.Context) (plugin.ResourceHandler, error) {
+			return iam_role_custom_project.NewHandler(ctx)
+		},
+		"iam_policy": func(ctx context.Context) (plugin.ResourceHandler, error) {
+			return iam_policy.NewHandler(ctx)
 		},
 	})
 }

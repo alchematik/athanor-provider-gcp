@@ -9,6 +9,8 @@ import (
 	"github.com/alchematik/athanor-provider-gcp/gen/sdk/go/bucket"
 	bucketobject "github.com/alchematik/athanor-provider-gcp/gen/sdk/go/bucket_object"
 	"github.com/alchematik/athanor-provider-gcp/gen/sdk/go/function"
+	iampolicy "github.com/alchematik/athanor-provider-gcp/gen/sdk/go/iam_policy"
+	iamcustomrole "github.com/alchematik/athanor-provider-gcp/gen/sdk/go/iam_role_custom_project"
 	serviceaccount "github.com/alchematik/athanor-provider-gcp/gen/sdk/go/service_account"
 
 	athanor "github.com/alchematik/athanor-go/sdk/consumer"
@@ -185,6 +187,51 @@ func main() {
 		Config:     apiGatewayConfig,
 	}
 	bp = bp.WithResource(apiGatewayResource)
+
+	testRoleIdentifier := iamcustomrole.Identifier{
+		Alias:   "test-role",
+		Project: "textapp-389501",
+		Name:    "testrole",
+	}
+	testRoleConfig := iamcustomrole.Config{
+		Title:       "Test role",
+		Description: "Test role for invoking cloud functions.",
+		Stage:       "ALPHA",
+		Permissions: []any{
+			"cloudfunctions.functions.invoke",
+			"run.jobs.run",
+			"run.routes.invoke",
+		},
+	}
+	testRole := athanor.Resource{
+		Exists:     true,
+		Provider:   provider,
+		Identifier: testRoleIdentifier,
+		Config:     testRoleConfig,
+	}
+	bp = bp.WithResource(testRole)
+
+	functionPolicyID := iampolicy.Identifier{
+		Alias:    "my-function-policy",
+		Resource: funcID,
+	}
+	functionPolicyConfig := iampolicy.Config{
+		Bindings: []any{
+			iampolicy.Binding{
+				Role: testRoleIdentifier,
+				Members: []any{
+					serviceAccountID,
+				},
+			},
+		},
+	}
+	functionPolicy := athanor.Resource{
+		Exists:     true,
+		Provider:   provider,
+		Identifier: functionPolicyID,
+		Config:     functionPolicyConfig,
+	}
+	bp = bp.WithResource(functionPolicy)
 
 	if err := athanor.Build(bp); err != nil {
 		log.Fatalf("error building blueprint: %v", err)

@@ -11,13 +11,16 @@ func main() {
 		Name:    "gcp",
 		Version: "v0.0.1",
 		Resources: []schema.ResourceSchema{
-			bucket,
-			bucketObject,
-			function,
-			serviceAccount,
 			api,
 			apiConfig,
 			apiGateway,
+			bucket,
+			bucketObject,
+			function,
+			iamPolicy,
+			iamRole,
+			iamRoleCustomProject,
+			serviceAccount,
 		},
 	}
 

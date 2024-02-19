@@ -6,6 +6,8 @@ require (
 	cloud.google.com/go/apigateway v1.6.2
 	cloud.google.com/go/functions v1.15.2
 	cloud.google.com/go/iam v1.1.3
+	cloud.google.com/go/resourcemanager v1.9.2
+	cloud.google.com/go/run v1.3.1
 	cloud.google.com/go/storage v1.36.0
 	github.com/alchematik/athanor-go v0.0.0-20240113021430-408d7b7731fa
 	github.com/googleapis/gax-go/v2 v2.12.0

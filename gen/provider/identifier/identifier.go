@@ -28,10 +28,35 @@ func ParseIdentifier(v any) (sdk.ResourceIdentifier, error) {
 		return ParseBucketObjectIdentifier(id)
 	case "function":
 		return ParseFunctionIdentifier(id)
+	case "iam_policy":
+		return ParseIamPolicyIdentifier(id)
+	case "iam_role":
+		return ParseIamRoleIdentifier(id)
+	case "iam_role_custom_project":
+		return ParseIamRoleCustomProjectIdentifier(id)
 	case "service_account":
 		return ParseServiceAccountIdentifier(id)
 
 	default:
 		return nil, fmt.Errorf("invalid resource type: %s", id.ResourceType)
 	}
+}
+
+func ParseIdentifierList(v any) ([]sdk.ResourceIdentifier, error) {
+	list, ok := v.([]any)
+	if !ok {
+		return nil, fmt.Errorf("invalid type for list: %T", v)
+	}
+
+	var ids []sdk.ResourceIdentifier
+	for _, v := range list {
+		id, err := ParseIdentifier(v)
+		if err != nil {
+			return nil, err
+		}
+
+		ids = append(ids, id)
+	}
+
+	return ids, nil
 }

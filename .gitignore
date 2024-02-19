@@ -1,2 +1,4 @@
 .translator
 build
+.DS_Store
+debug.log

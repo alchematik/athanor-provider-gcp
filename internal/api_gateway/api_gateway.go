@@ -3,7 +3,6 @@ package api_gateway
 import (
 	"context"
 	"fmt"
-	"log"
 	"regexp"
 
 	gcpapigateway "cloud.google.com/go/apigateway/apiv1"
@@ -68,8 +67,6 @@ func (c *client) GetApiGateway(ctx context.Context, id identifier.ApiGatewayIden
 		return apigateway.ApiGateway{}, fmt.Errorf("invalid API config ID in response: %q", res.ApiConfig)
 	}
 
-	log.Printf("\n\n>>>>>>>>>>>>>>> %v\n\n", res.ApiConfig)
-
 	gw := apigateway.ApiGateway{
 		Identifier: id,
 		Config: apigateway.Config{
@@ -93,8 +90,6 @@ func (c *client) GetApiGateway(ctx context.Context, id identifier.ApiGatewayIden
 			DefaultHostname: res.DefaultHostname,
 		},
 	}
-
-	log.Printf("GATEWAY >> %+v\n", gw)
 
 	return gw, nil
 }

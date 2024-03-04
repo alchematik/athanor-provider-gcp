@@ -58,6 +58,7 @@ func (c *client) GetBucket(ctx context.Context, id identifier.BucketIdentifier) 
 		},
 		Attrs: bucket.Attrs{
 			Create: attrs.Created.String(),
+			Etag:   fmt.Sprintf("%x", attrs.Etag),
 		},
 	}, nil
 }
@@ -83,6 +84,7 @@ func (c *client) CreateBucket(ctx context.Context, id identifier.BucketIdentifie
 		},
 		Attrs: bucket.Attrs{
 			Create: attrs.Created.String(),
+			Etag:   fmt.Sprintf("%x", attrs.Etag),
 		},
 	}, nil
 }
@@ -120,6 +122,7 @@ func (c *client) UpdateBucket(ctx context.Context, id identifier.BucketIdentifie
 		},
 		Attrs: bucket.Attrs{
 			Create: attrs.Created.String(),
+			Etag:   fmt.Sprintf("%x", attrs.Etag),
 		},
 	}, nil
 }

@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	athanor.Build(func(_ any) (athanor.Blueprint, error) {
+	athanor.Build(func(_ ...any) (athanor.Blueprint, error) {
 		bp := athanor.Blueprint{}
 
 		provider := athanor.Provider{
@@ -59,11 +59,9 @@ func main() {
 					Path: "build/translator",
 				},
 			},
-			map[string]any{
-				"bucket_exists": true,
-				"bucket_name":   "athanor-test-sub-bucket",
-			},
-			nil,
+			athanor.Get{Name: "my-bucket"}.Get("attrs").Get("etag"),
+			true,
+			"athanor-test-sub-bucket",
 		)
 
 		bucketObjectConfig := bucketobject.Config{
@@ -71,6 +69,24 @@ func main() {
 				Path: "../test_cloud_func.zip",
 			},
 		}
+
+		anotherBucket := athanor.Resource{
+			Exists:   true,
+			Provider: provider,
+			Identifier: bucket.Identifier{
+				Alias:    "another-test-athanor-bucket",
+				Project:  "textapp-389501",
+				Location: "us-east4",
+				Name:     "another-test-athanor-bucket",
+			},
+			Config: bucket.Config{
+				Labels: map[string]any{
+					"test": athanor.Get{Name: "my-bucket"}.Get("attrs").Get("etag"),
+				},
+			},
+		}
+
+		bp = bp.WithResource(anotherBucket)
 
 		bucketObject := athanor.Resource{
 			Exists:   true,
@@ -93,7 +109,11 @@ func main() {
 				Bucket: myBucket.Identifier,
 				Name:   "my-other-bucket-object",
 			},
-			Config: bucketObjectConfig,
+			Config: bucketobject.Config{
+				Contents: athanor.File{
+					Path: "../test_cloud_func.zip",
+				},
+			},
 		}
 
 		bp = bp.WithResource(anotherBucketObject)

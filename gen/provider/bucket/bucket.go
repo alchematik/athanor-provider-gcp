@@ -142,11 +142,13 @@ func (h *BucketHandler) Close() error {
 
 type Attrs struct {
 	Create string
+	Etag   string
 }
 
 func (x Attrs) ToValue() any {
 	return map[string]any{
 		"create": sdk.ToType[any](x.Create),
+		"etag":   sdk.ToType[any](x.Etag),
 	}
 }
 
@@ -160,9 +162,14 @@ func ParseAttrs(v any) (Attrs, error) {
 	if err != nil {
 		return Attrs{}, fmt.Errorf("error parsing attrs for bucket: %v", err)
 	}
+	etag, err := sdk.String(m["etag"])
+	if err != nil {
+		return Attrs{}, fmt.Errorf("error parsing attrs for bucket: %v", err)
+	}
 
 	return Attrs{
 		Create: create,
+		Etag:   etag,
 	}, nil
 }
 

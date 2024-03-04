@@ -1,19 +1,16 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/alchematik/athanor-provider-gcp/gen/sdk/go/bucket"
 
 	athanor "github.com/alchematik/athanor-go/sdk/consumer"
 )
 
 func main() {
-	athanor.Build(func(args any) (athanor.Blueprint, error) {
-		m, ok := args.(map[string]any)
-		if !ok {
-			return athanor.Blueprint{}, fmt.Errorf("expected map, got %T", args)
-		}
+	athanor.Build(func(args ...any) (athanor.Blueprint, error) {
+
+		exists := args[0]
+		name := args[1]
 
 		bp := athanor.Blueprint{}
 
@@ -26,17 +23,18 @@ func main() {
 		}
 
 		b := athanor.Resource{
-			Exists:   m["bucket_exists"],
+			Exists:   exists,
 			Provider: provider,
 			Identifier: bucket.Identifier{
 				Alias:    "sub-resource-bucket",
 				Project:  "textapp-389501",
 				Location: "us-east4",
-				Name:     m["bucket_name"],
+				Name:     name,
 			},
 			Config: bucket.Config{
 				Labels: map[string]any{
 					"foo": "bar",
+					"hi":  athanor.RuntimeConfig{},
 				},
 			},
 		}

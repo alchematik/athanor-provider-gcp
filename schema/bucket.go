@@ -16,5 +16,6 @@ var bucket = schema.ResourceSchema{
 	}),
 	Attrs: schema.Struct("attrs", map[string]schema.FieldSchema{
 		"create": schema.String(),
+		"etag":   schema.String(),
 	}),
 }

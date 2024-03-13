@@ -17,7 +17,7 @@ func main() {
 		provider := athanor.Provider{
 			Name:    "gcp",
 			Version: "v0.0.1",
-			Repo: athanor.RepoLocal{
+			Source: athanor.RepoLocal{
 				Path: "build/provider",
 			},
 		}

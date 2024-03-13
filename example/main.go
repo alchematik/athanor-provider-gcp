@@ -1,6 +1,10 @@
 package main
 
 import (
+	"fmt"
+	"path/filepath"
+	"runtime"
+
 	"github.com/alchematik/athanor-provider-gcp/gen/sdk/go/api"
 	apiconfig "github.com/alchematik/athanor-provider-gcp/gen/sdk/go/api_config"
 	apigateway "github.com/alchematik/athanor-provider-gcp/gen/sdk/go/api_gateway"
@@ -19,10 +23,9 @@ func main() {
 		bp := athanor.Blueprint{}
 
 		provider := athanor.Provider{
-			Name:    "gcp",
-			Version: "v0.0.1",
-			Repo: athanor.RepoLocal{
-				Path: "build/provider",
+			Name: "gcp",
+			Source: athanor.SourceFilePath{
+				Path: "build/provider/gcp/v0.0.1/provider",
 			},
 		}
 
@@ -47,18 +50,23 @@ func main() {
 
 		bp = bp.WithResource(myBucket)
 
+		goTranslator := athanor.Translator{
+			Name: "go",
+			Source: athanor.SourceGitHubRelease{
+				RepoOwner:    "alchematik",
+				RepoName:     "athanor-go",
+				ReleaseName:  "v0.0.1-alpha.4",
+				ArtifactName: fmt.Sprintf("%s_%s.tar.gz", runtime.GOOS, runtime.GOARCH),
+				ChecksumName: "checksum.txt",
+			},
+		}
+
 		bp = bp.WithBuild(
 			"sub-blueprint",
-			athanor.RepoLocal{
-				Path: "./example/sub",
+			athanor.SourceFilePath{
+				Path: filepath.Join("example", "sum"),
 			},
-			athanor.Translator{
-				Name:    "go",
-				Version: "v0.0.1",
-				Repo: athanor.RepoLocal{
-					Path: "build/translator",
-				},
-			},
+			goTranslator,
 			athanor.Get{Name: "my-bucket"}.Get("attrs").Get("etag"),
 			true,
 			"athanor-test-sub-bucket",

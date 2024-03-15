@@ -7,13 +7,13 @@ require (
 	cloud.google.com/go/functions v1.15.2
 	cloud.google.com/go/iam v1.1.3
 	cloud.google.com/go/storage v1.36.0
-	github.com/alchematik/athanor-go v0.0.0-20240113021430-408d7b7731fa
+	github.com/alchematik/athanor-go v0.0.1-alpha.4
 	github.com/googleapis/gax-go/v2 v2.12.0
 	google.golang.org/grpc v1.60.1
 	google.golang.org/protobuf v1.32.0
 )
 
-replace github.com/alchematik/athanor-go => ../athanor-go
+// replace github.com/alchematik/athanor-go => ../athanor-go
 
 require (
 	cloud.google.com/go v0.110.8 // indirect

@@ -15,10 +15,9 @@ func main() {
 		bp := athanor.Blueprint{}
 
 		provider := athanor.Provider{
-			Name:    "gcp",
-			Version: "v0.0.1",
-			Source: athanor.RepoLocal{
-				Path: "build/provider",
+			Name: "gcp",
+			Source: athanor.SourceFilePath{
+				Path: "build/provider/gcp/v0.0.1/provider",
 			},
 		}
 
@@ -33,7 +32,7 @@ func main() {
 			},
 			Config: bucket.Config{
 				Labels: map[string]any{
-					"foo": "bar",
+					"foo": "bar_bar",
 					"hi":  athanor.RuntimeConfig{},
 				},
 			},

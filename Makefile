@@ -26,6 +26,10 @@ diff/show: install/athanor
 diff/reconcile: install/athanor
 	athanor diff reconcile --debug ./example/config.json
 
+.PHONY: deps/download
+deps/download: install/athanor
+	athanor deps download --debug ./example/config.json
+
 .PHONY: deps/install
 deps/install: install/athanor
 	athanor deps install --debug ./example/config.json

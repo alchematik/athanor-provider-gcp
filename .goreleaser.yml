@@ -15,7 +15,7 @@ builds:
 
 archives:
   - format: tar.gz
-    name_template: {{ .Os }}_{{ .Arch }}
+    name_template: "{{ .Os }}_{{ .Arch }}"
 
 checksum:
   name_template: "checksum.txt"
